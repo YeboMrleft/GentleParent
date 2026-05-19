@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#C9397A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Gentle Parent · Meet Your AI Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── Tokens ─── */
+    :root {
+      --pink:        #C9397A;
+      --pink-mid:    #E05490;
+      --pink-pale:   #FFE4EF;
+      --pink-soft:   #FFF0F7;
+      --gold:        #B87D3A;
+      --gold-light:  #F0C070;
+      --plum:        #2A1828;
+      --plum-mid:    #5A3A54;
+      --muted:       #9A7080;
+      --bg:          #FFF8FB;
+      --white:       #FFFFFF;
+      --border:      rgba(201,57,122,0.10);
+      --shadow-sm:   0 2px 12px rgba(201,57,122,0.07);
+      --shadow:      0 4px 24px rgba(201,57,122,0.10);
+      --shadow-lg:   0 8px 40px rgba(201,57,122,0.16);
+      --r:           16px;
+      --r-lg:        24px;
+    }
+
+    /* ─── Reset ─── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--plum);
+      max-width: 480px;
+      margin: 0 auto;
+      overflow-x: hidden;
+      padding-bottom: 80px;
+    }
+    ::-webkit-scrollbar { display: none; }
+
+    /* ─── Sticky Progress ─── */
+    .progress-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,248,251,0.94);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .step-pill {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 11px; border-radius: 20px;
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.4px;
+      color: var(--muted); transition: all 0.3s ease;
+      border: 1.5px solid transparent; white-space: nowrap;
+    }
+    .step-pill .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; flex-shrink: 0;
+    }
+    .step-pill.active { background: var(--pink); color: #fff; border-color: var(--pink); }
+    .step-pill.done   { background: var(--pink-pale); color: var(--pink); border-color: var(--pink-pale); }
+    .step-line { flex: 1; height: 1px; background: var(--border); max-width: 18px; }
+
+    /* ─── Hero ─── */
+    .hero {
+      position: relative; overflow: hidden;
+      padding: 52px 24px 44px;
+      text-align: center;
+      background: linear-gradient(160deg, #2A0A1C 0%, #5A1840 40%, #8B2260 70%, #C9397A 100%);
+    }
+    .hero-blob {
+      position: absolute; border-radius: 50%; filter: blur(55px);
+      opacity: 0.3; pointer-events: none;
+    }
+    .hero-blob-1 { width: 260px; height: 260px; background: #FF80AB; top: -80px; right: -60px; }
+    .hero-blob-2 { width: 200px; height: 200px; background: #CE93D8; bottom: -60px; left: -40px; }
+    .hero-badge {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(10px);
+      color: white; font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
+      padding: 6px 16px; border-radius: 20px;
+      margin-bottom: 24px; text-transform: uppercase;
+    }
+    .hero h1 {
+      position: relative;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 34px; line-height: 1.15; color: white;
+      margin-bottom: 16px;
+    }
+    .hero h1 em { font-style: italic; color: #FFB3D1; }
+    .hero-sub {
+      position: relative;
+      font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.7;
+      max-width: 320px; margin: 0 auto 30px;
+    }
+    .hero-app-pill {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 11px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(12px);
+      border-radius: 20px; padding: 10px 18px;
+      margin-bottom: 28px;
+    }
+    .hero-app-mark {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: linear-gradient(135deg, #FFB4D4, #C9397A);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+    .hero-app-name { font-size: 14px; font-weight: 700; color: white; }
+    .hero-app-name span { color: #FFB3D1; }
+    .hero-app-tag { font-size: 9px; color: rgba(255,255,255,0.55); letter-spacing: 0.5px; }
+
+    .scroll-hint {
+      position: relative;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; color: rgba(255,255,255,0.45); font-size: 11px;
+      animation: nudge 2s ease-in-out infinite;
+    }
+    @keyframes nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+    /* ─── Section shell ─── */
+    .section { padding: 36px 24px; }
+    .section-bg-soft { background: linear-gradient(180deg, var(--pink-soft) 0%, var(--bg) 100%); }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--pink); margin-bottom: 8px;
+    }
+    .step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--pink); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 900; flex-shrink: 0;
+    }
+    .section h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 26px; line-height: 1.25; color: var(--plum); margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: 13.5px; color: var(--plum-mid); line-height: 1.65; margin-bottom: 24px;
+    }
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 24px;
+    }
+
+    /* ─── Feature cards ─── */
+    .feature-cards { display: flex; flex-direction: column; gap: 11px; }
+    .feature-card {
+      background: var(--white); border-radius: var(--r);
+      padding: 15px 16px;
+      display: flex; align-items: flex-start; gap: 13px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:active { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .f-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .f-icon.pink  { background: #FFE4EF; }
+    .f-icon.green { background: #E8F5E9; }
+    .f-icon.amber { background: #FFF3E0; }
+    .f-icon.blue  { background: #E3F2FD; }
+    .f-icon.purple{ background: #EDE7F6; }
+    .f-title { font-size: 13.5px; font-weight: 700; color: var(--plum); margin-bottom: 3px; }
+    .f-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .f-new {
+      display: inline-block; font-size: 8px; font-weight: 800;
+      letter-spacing: 1px; padding: 2px 7px; border-radius: 20px;
+      background: var(--pink-pale); color: var(--pink);
+      text-transform: uppercase; margin-top: 6px;
+    }
+
+    /* ─── Quote card ─── */
+    .quote-card {
+      background: linear-gradient(135deg, var(--pink) 0%, #A02860 100%);
+      border-radius: var(--r-lg); padding: 24px 22px;
+      margin: 22px 0; color: white; position: relative; overflow: hidden;
+    }
+    .quote-card::before {
+      content: '"'; position: absolute;
+      top: -16px; left: 14px;
+      font-family: 'Playfair Display', serif;
+      font-size: 110px; color: rgba(255,255,255,0.10);
+      line-height: 1; pointer-events: none;
+    }
+    .quote-text {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 16px; font-style: italic; line-height: 1.6;
+      margin-bottom: 12px; position: relative;
+    }
+    .quote-attr { font-size: 10px; font-weight: 700; letter-spacing: 1px; opacity: 0.7; text-transform: uppercase; }
+
+    /* ─── Live notice ─── */
+    .live-notice {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #F0FFF5; border: 1.5px solid #9FDAB4;
+      border-radius: var(--r); padding: 13px 14px; margin-bottom: 20px;
+    }
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #2DB469; flex-shrink: 0; margin-top: 4px;
+      animation: pulse-green 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-green {
+      0%,100% { box-shadow: 0 0 0 0 rgba(45,180,105,0.4); }
+      50%      { box-shadow: 0 0 0 5px rgba(45,180,105,0); }
+    }
+    .live-text { font-size: 12px; color: #1A6E3A; line-height: 1.5; font-weight: 500; }
+    .live-text strong { font-weight: 700; }
+
+    /* ─── Scenario cards ─── */
+    .scenario-stack { display: flex; flex-direction: column; gap: 15px; }
+    .s-card {
+      background: var(--white); border-radius: var(--r);
+      overflow: hidden; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+    .s-header {
+      background: var(--pink-pale); padding: 8px 15px;
+      font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--pink);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .s-body { padding: 14px 15px; }
+    .s-prompt-lbl {
+      font-size: 9px; font-weight: 600; color: var(--muted);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 7px;
+    }
+    .chat-bubble {
+      background: #F3EEFF;
+      border-radius: 4px 14px 14px 14px;
+      padding: 11px 13px; font-size: 13px;
+      color: var(--plum); line-height: 1.55;
+      font-weight: 500; margin-bottom: 10px;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; border: 1.5px solid var(--pink);
+      color: var(--pink); font-family: 'Inter', sans-serif;
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px;
+      padding: 6px 13px; border-radius: 20px; cursor: pointer;
+      transition: all 0.2s; margin-bottom: 11px;
+    }
+    .copy-btn.copied { background: var(--pink); color: white; border-color: var(--pink); }
+    .look-for {
+      display: flex; align-items: flex-start; gap: 8px;
+      background: var(--bg); border-radius: 10px; padding: 9px 11px;
+    }
+    .lf-icon { font-size: 12px; margin-top: 1px; flex-shrink: 0; }
+    .lf-text { font-size: 11px; color: var(--plum-mid); line-height: 1.5; }
+    .lf-text strong { color: var(--plum); font-weight: 600; }
+
+    /* ─── Reaction row ─── */
+    .reaction-row { display: flex; justify-content: space-between; gap: 8px; margin: 20px 0 24px; }
+    .r-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: white; border: 1.5px solid var(--border);
+      border-radius: var(--r); padding: 12px 4px;
+      cursor: pointer; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .r-btn:active, .r-btn.picked { border-color: var(--pink); background: var(--pink-pale); transform: scale(1.06); }
+    .r-emoji { font-size: 22px; }
+    .r-lbl { font-size: 9.5px; font-weight: 600; color: var(--muted); }
+
+    /* ─── Exclusive / highlight card ─── */
+    .highlight-card {
+      background: linear-gradient(135deg, #2A1828 0%, #4A2045 100%);
+      border-radius: var(--r-lg); padding: 24px 22px;
+      color: white; text-align: center; position: relative;
+      overflow: hidden; margin: 20px 0;
+    }
+    .highlight-card::before {
+      content: '✦   ✦   ✦';
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      font-size: 9px; color: var(--gold-light); letter-spacing: 8px; opacity: 0.5;
+    }
+    .hl-badge {
+      display: inline-block; background: var(--gold);
+      color: white; font-size: 9px; font-weight: 800;
+      letter-spacing: 1.5px; padding: 4px 11px;
+      border-radius: 20px; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .hl-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 21px; margin-bottom: 9px; color: white;
+    }
+    .hl-sub { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.68); }
+
+    /* ─── SA badge row ─── */
+    .lang-row {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      margin-top: 16px;
+    }
+    .lang-chip {
+      font-size: 10px; font-weight: 700; color: var(--plum-mid);
+      background: white; border: 1.5px solid var(--border);
+      padding: 4px 11px; border-radius: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ─── CTAs ─── */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      background: linear-gradient(135deg, var(--pink) 0%, #A02860 100%);
+      color: white; font-family: 'Inter', sans-serif;
+      font-size: 14.5px; font-weight: 700; letter-spacing: 0.4px;
+      padding: 16px 24px; border-radius: var(--r); border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(201,57,122,0.35), 0 2px 8px rgba(201,57,122,0.18);
+      text-decoration: none; transition: all 0.2s;
+    }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-secondary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; background: transparent; color: var(--pink);
+      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+      padding: 14px 24px; border-radius: var(--r);
+      border: 1.5px solid var(--pink); cursor: pointer;
+      text-decoration: none; transition: all 0.2s; margin-top: 10px;
+    }
+    .btn-secondary:active { background: var(--pink-pale); }
+
+    /* ─── Footer ─── */
+    footer { padding: 32px 24px 16px; text-align: center; }
+    .footer-h {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 24px; line-height: 1.25; margin-bottom: 9px;
+    }
+    .footer-sub { font-size: 13px; color: var(--plum-mid); line-height: 1.65; margin-bottom: 26px; }
+    .footer-note { font-size: 11.5px; color: var(--muted); line-height: 1.65; margin-top: 18px; }
+    .footer-brand { font-size: 12px; color: var(--pink); font-weight: 600; margin-top: 14px; }
+
+    /* ─── Tester box ─── */
+    .tester-box {
+      background: linear-gradient(135deg, #2A1828 0%, #4A2045 100%);
+      border-radius: var(--r-lg); padding: 20px;
+      margin-bottom: 20px; color: white;
+    }
+    .tester-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+      color: var(--gold-light); text-transform: uppercase; margin-bottom: 10px;
+    }
+    .tester-desc {
+      font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.75); margin-bottom: 16px;
+    }
+    .tester-step {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px; padding: 12px 14px; text-decoration: none;
+    }
+    .tester-step + .tester-step { margin-top: 10px; }
+    .tester-step:active { background: rgba(255,255,255,0.16); }
+    .tester-num {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .tester-step-title { font-size: 12.5px; font-weight: 700; color: white; }
+    .tester-step-sub { font-size: 10.5px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+    .tester-arrow { margin-left: auto; color: rgba(255,255,255,0.4); font-size: 14px; }
+    .tester-note {
+      font-size: 10px; color: rgba(255,255,255,0.4);
+      text-align: center; margin-top: 12px;
+    }
+
+    /* ─── Features explore btn ─── */
+    @keyframes features-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(201,57,122,0.25), var(--shadow); }
+      50%       { box-shadow: 0 0 0 8px rgba(201,57,122,0), var(--shadow-lg); }
+    }
+    @keyframes features-arrow {
+      0%, 100% { transform: translateX(0); }
+      50%       { transform: translateX(6px); }
+    }
+    @keyframes features-shimmer {
+      0%   { transform: translateX(-100%) skewX(-15deg); }
+      100% { transform: translateX(250%) skewX(-15deg); }
+    }
+    .features-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(135deg, #fff 0%, #FFF0F7 100%);
+      border: 2px solid var(--pink);
+      border-radius: var(--r); padding: 16px 18px;
+      text-decoration: none; margin-bottom: 20px;
+      position: relative; overflow: hidden;
+      animation: features-pulse 2.2s ease-in-out infinite;
+      transition: transform 0.2s;
+    }
+    .features-btn:active { transform: scale(0.97); }
+    .features-btn-shimmer {
+      position: absolute; top: 0; left: 0; width: 40%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+      animation: features-shimmer 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .features-btn-arrow {
+      font-size: 22px; color: var(--pink); font-weight: 700;
+      animation: features-arrow 1.1s ease-in-out infinite;
+      position: relative; z-index: 1;
+    }
+
+    /* ─── Sticky bottom banner ─── */
+    .sticky-banner {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      max-width: 480px; margin: 0 auto;
+      background: rgba(255,248,251,0.96);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 20px;
+      z-index: 90;
+      transform: translateY(100%);
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .sticky-banner.show { transform: translateY(0); }
+    .banner-row { display: flex; align-items: center; gap: 10px; }
+    .banner-icon { font-size: 26px; flex-shrink: 0; }
+    .banner-copy { flex: 1; }
+    .banner-title { font-size: 12.5px; font-weight: 700; color: var(--plum); }
+    .banner-sub { font-size: 10px; color: var(--muted); }
+    .banner-btn {
+      background: var(--pink); color: white;
+      font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 700;
+      padding: 8px 16px; border-radius: 20px; border: none;
+      cursor: pointer; letter-spacing: 0.4px; white-space: nowrap;
+      text-decoration: none; display: inline-block;
+    }
+
+    /* ─── Fade-in ─── */
+    .fi { opacity: 0; transform: translateY(18px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .fi.vis { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+
+    /* ─── Share flyer ─── */
+    .share-strip {
+      margin: 0 20px;
+      background: linear-gradient(135deg, #2A0A1C 0%, #8B2260 100%);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer; border: none; width: calc(100% - 40px);
+      font-family: 'Inter', sans-serif;
+    }
+    .share-strip-icon { font-size: 26px; flex-shrink: 0; }
+    .share-strip-copy { flex: 1; text-align: left; }
+    .share-strip-title { font-size: 13px; font-weight: 800; color: white; }
+    .share-strip-sub { font-size: 10.5px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+    .share-strip-arrow { font-size: 18px; color: rgba(255,255,255,0.5); }
+
+    /* ─── Flyer modal ─── */
+    .flyer-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.92);
+      flex-direction: column; align-items: center; justify-content: flex-start;
+      overflow-y: auto; padding: 16px 0 32px;
+    }
+    .flyer-modal.open { display: flex; }
+    .flyer-modal-bar {
+      width: 100%; max-width: 480px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px 14px;
+    }
+    .flyer-modal-close {
+      background: rgba(255,255,255,0.12); border: none;
+      color: white; font-size: 20px; width: 36px; height: 36px;
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Inter', sans-serif;
+    }
+    .flyer-modal-label { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 1px; }
+    .flyer-img { width: 100%; max-width: 440px; border-radius: 12px; display: block; margin: 0 auto; }
+    .flyer-dl {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 16px;
+      background: var(--pink);
+      color: white; font-family: 'Inter', sans-serif;
+      font-size: 13.5px; font-weight: 700;
+      padding: 13px 28px; border-radius: var(--r);
+      text-decoration: none; width: calc(100% - 32px); max-width: 440px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky progress -->
+  <nav class="progress-bar" aria-label="Steps">
+    <div class="step-pill active" id="p1"><span class="dot"></span>Discover</div>
+    <div class="step-line"></div>
+    <div class="step-pill" id="p2"><span class="dot"></span>Try It</div>
+    <div class="step-line"></div>
+    <div class="step-pill" id="p3"><span class="dot"></span>Your Take</div>
+  </nav>
+
+  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+  <header class="hero">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+
+    <div class="hero-badge">🌱 Gentle Parent</div>
+
+    <h1>Your calm companion<br>through <em>every</em> stage</h1>
+
+    <p class="hero-sub">
+      Like having a warm, wise friend on call — one who never judges, always listens, and gives you real support in seconds.
+    </p>
+
+    <div class="hero-app-pill">
+      <div class="hero-app-mark">🌱</div>
+      <div style="text-align:left;">
+        <div class="hero-app-name">Gentle <span>Parent</span></div>
+        <span class="hero-app-tag">Your AI parent assistant · Free on Android</span>
+      </div>
+    </div>
+
+    <div class="scroll-hint" aria-hidden="true">
+      <span>Scroll to explore</span>
+      <span>↓</span>
+    </div>
+  </header>
+
+  <!-- Tester box -->
+  <div style="padding: 20px 20px 0;">
+    <div class="tester-box">
+      <div class="tester-label">🧪 Become a Tester</div>
+      <p class="tester-desc">
+        Get early access to new features before anyone else. Two quick steps:
+      </p>
+
+      <a href="https://groups.google.com/g/mrpnxele" target="_blank" rel="noopener noreferrer" class="tester-step">
+        <div class="tester-num">1️⃣</div>
+        <div>
+          <div class="tester-step-title">Join the Testers Group</div>
+          <div class="tester-step-sub">Tap to join on Google Groups</div>
+        </div>
+        <span class="tester-arrow">→</span>
+      </a>
+
+      <a href="https://play.google.com/apps/testing/com.mrnxele.GentleParent" target="_blank" rel="noopener noreferrer" class="tester-step">
+        <div class="tester-num">2️⃣</div>
+        <div>
+          <div class="tester-step-title">Activate Test Access</div>
+          <div class="tester-step-sub">Opt in on the Play Store</div>
+        </div>
+        <span class="tester-arrow">→</span>
+      </a>
+
+      <p class="tester-note">After both steps, download from the Play Store as normal.</p>
+    </div>
+  </div>
+
+  <!-- Share flyer -->
+  <div style="padding: 12px 0 0;">
+    <button class="share-strip" onclick="document.getElementById('flyerModal').classList.add('open')">
+      <span class="share-strip-icon">📤</span>
+      <div class="share-strip-copy">
+        <div class="share-strip-title">Share the News</div>
+        <div class="share-strip-sub">Tap to view &amp; save our launch flyer</div>
+      </div>
+      <span class="share-strip-arrow">→</span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════ STEP 1 — DISCOVER ═══════════════════════════ -->
+  <section class="section" id="step1">
+    <div class="section-label">
+      <div class="step-num">1</div>
+      Discover
+    </div>
+    <h2>Meet your AI<br>parenting companion</h2>
+    <p class="section-sub">
+      Three AI companions built for South African parents — each with their own voice, personality, and purpose.
+    </p>
+
+    <div class="feature-cards">
+      <div class="feature-card fi">
+        <div class="f-icon pink">🌱</div>
+        <div>
+          <div class="f-title">Lesedi — Your warm guide</div>
+          <div class="f-desc">Parenting advice, life chats, celebrity gossip, relationships. Mood-aware. Gender-aware. Speaks all 11 SA languages.</div>
+          <span class="f-new">For Everyone</span>
+        </div>
+      </div>
+      <div class="feature-card fi d1">
+        <div class="f-icon pink">💅</div>
+        <div>
+          <div class="f-title">Girl Talk — Just for women</div>
+          <div class="f-desc">A safe, private space for self-care, burnout, mom guilt, beauty, and real talk. She holds space without judgment.</div>
+          <span class="f-new">Moms &amp; Women</span>
+        </div>
+      </div>
+      <div class="feature-card fi d2">
+        <div class="f-icon green">😎</div>
+        <div>
+          <div class="f-title">Bra K — Kasi vibes</div>
+          <div class="f-desc">Your streetwise homeboy. Sports, cars, business, sneakers, real talk. He hypes you up when you're winning.</div>
+          <span class="f-new">Kasi Energy</span>
+        </div>
+      </div>
+      <div class="feature-card fi d3">
+        <div class="f-icon amber">💬</div>
+        <div>
+          <div class="f-title">Ask anything, anytime</div>
+          <div class="f-desc">Tantrums, bedtime battles, teen drama, picky eating, big emotions — no question is too small.</div>
+        </div>
+      </div>
+      <div class="feature-card fi d4">
+        <div class="f-icon blue">🏫</div>
+        <div>
+          <div class="f-title">School Hub — All in one</div>
+          <div class="f-desc">Homework helper, report card scanner, teacher message drafts, chore chart, term planner and more.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 18px; margin-bottom: 4px;">
+      <p style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:10px;">Your companions speak your language:</p>
+      <div class="lang-row">
+        <span class="lang-chip">isiZulu</span>
+        <span class="lang-chip">isiXhosa</span>
+        <span class="lang-chip">Sesotho</span>
+        <span class="lang-chip">Setswana</span>
+        <span class="lang-chip">Sepedi</span>
+        <span class="lang-chip">Tshivenda</span>
+        <span class="lang-chip">Afrikaans</span>
+        <span class="lang-chip">Kasi Slang</span>
+        <span class="lang-chip">English</span>
+      </div>
+    </div>
+
+    <div class="quote-card fi" style="margin-top:24px;">
+      <p class="quote-text">
+        "A mother is not only the woman who gives life — but anyone who nurtures, loves, and shows up with care."
+      </p>
+      <div class="quote-attr">— Gentle Parent</div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════════════════════ STEP 2 — TRY IT ═══════════════════════════ -->
+  <section class="section" id="step2">
+    <div class="section-label">
+      <div class="step-num">2</div>
+      Try It Live
+    </div>
+    <h2>Your turn.<br>Open the app now.</h2>
+    <p class="section-sub">
+      Pick any prompt below, copy it, and paste it into the Gentle Parent chat. See what it says.
+    </p>
+
+    <div class="live-notice">
+      <div class="live-dot"></div>
+      <p class="live-text"><strong>Try it yourself.</strong> Open the app, paste a prompt, and notice how it responds — real, warm, practical.</p>
+    </div>
+
+    <div class="scenario-stack">
+
+      <div class="s-card fi">
+        <div class="s-header"><span>💡</span> Scenario 1 — The Morning Struggle</div>
+        <div class="s-body">
+          <div class="s-prompt-lbl">Type this in the app:</div>
+          <div class="chat-bubble" id="p_1">My toddler throws a massive tantrum every morning before school. Nothing I do helps. What should I do?</div>
+          <button class="copy-btn" onclick="doCopy('p_1',this)">📋 Copy prompt</button>
+          <div class="look-for">
+            <span class="lf-icon">👀</span>
+            <p class="lf-text"><strong>Look for:</strong> Calm, step-by-step strategies — not generic advice. Notice how it acknowledges your feelings before jumping to solutions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-card fi d1">
+        <div class="s-header"><span>🌙</span> Scenario 2 — Bedtime Battles</div>
+        <div class="s-body">
+          <div class="s-prompt-lbl">Type this in the app:</div>
+          <div class="chat-bubble" id="p_2">My 5-year-old refuses to sleep alone. She screams until I stay. I'm exhausted. How do I fix this gently?</div>
+          <button class="copy-btn" onclick="doCopy('p_2',this)">📋 Copy prompt</button>
+          <div class="look-for">
+            <span class="lf-icon">👀</span>
+            <p class="lf-text"><strong>Look for:</strong> Age-appropriate context — what's developmentally normal versus what needs attention. Practical steps, not platitudes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-card fi d2">
+        <div class="s-header"><span>💔</span> Scenario 3 — Tough Conversations</div>
+        <div class="s-body">
+          <div class="s-prompt-lbl">Type this in the app:</div>
+          <div class="chat-bubble" id="p_3">How do I explain to my 8-year-old that their grandparent just passed away? I don't know what words to use.</div>
+          <button class="copy-btn" onclick="doCopy('p_3',this)">📋 Copy prompt</button>
+          <div class="look-for">
+            <span class="lf-icon">👀</span>
+            <p class="lf-text"><strong>Look for:</strong> Emotional depth — actual phrases you can use tonight, not just theory. This is where it shines.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-card fi d3">
+        <div class="s-header"><span>🤝</span> Scenario 4 — Teen Connection</div>
+        <div class="s-body">
+          <div class="s-prompt-lbl">Type this in the app:</div>
+          <div class="chat-bubble" id="p_4">My teenager barely talks to me anymore. Every conversation turns into an argument. How do I reconnect without it feeling forced?</div>
+          <button class="copy-btn" onclick="doCopy('p_4',this)">📋 Copy prompt</button>
+          <div class="look-for">
+            <span class="lf-icon">👀</span>
+            <p class="lf-text"><strong>Look for:</strong> Strategies that respect the teen's perspective AND yours. Real advice from someone who actually gets it.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════════════════════ STEP 3 — YOUR TAKE ═══════════════════════════ -->
+  <section class="section section-bg-soft" id="step3">
+    <div class="section-label">
+      <div class="step-num">3</div>
+      Your Take
+    </div>
+    <h2>How is it<br>feeling so far?</h2>
+    <p class="section-sub">
+      This is just a glimpse. The more you use it, the more Gentle Parent understands your family's story.
+    </p>
+
+    <div class="reaction-row" role="group" aria-label="Reaction">
+      <button class="r-btn" onclick="pick(this)"><span class="r-emoji">😍</span><span class="r-lbl">Love it</span></button>
+      <button class="r-btn" onclick="pick(this)"><span class="r-emoji">🙂</span><span class="r-lbl">Interesting</span></button>
+      <button class="r-btn" onclick="pick(this)"><span class="r-emoji">🤔</span><span class="r-lbl">Curious</span></button>
+      <button class="r-btn" onclick="pick(this)"><span class="r-emoji">💬</span><span class="r-lbl">Want more</span></button>
+    </div>
+
+    <div class="highlight-card fi">
+      <div class="hl-badge">✦ Built in SA</div>
+      <h3 class="hl-title">Made for South African families.</h3>
+      <p class="hl-sub">
+        Gentle Parent understands your context — your languages, your culture, your pressure.
+        Every word is chosen with care.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+  <footer>
+    <h2 class="footer-h">Keep going.<br>It's yours now.</h2>
+    <p class="footer-sub">
+      Try it at home tonight. Share it with a parent who needs it. Come back whenever parenting gets hard.
+    </p>
+
+    <a href="/features" class="features-btn">
+      <div class="features-btn-shimmer"></div>
+      <div style="position:relative; z-index:1;">
+        <div style="font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--pink); margin-bottom:5px;">✦ What's inside</div>
+        <div style="font-size:14px; font-weight:800; color:var(--plum);">Explore All Features</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:2px;">35+ tools built for real parenting moments</div>
+      </div>
+      <span class="features-btn-arrow">→</span>
+    </a>
+
+    <div style="display:flex; flex-direction:column; gap:0; margin-bottom:24px;">
+      <a href="https://play.google.com/store/apps/details?id=com.mrnxele.GentleParent" class="btn-primary">
+        📱 Download Gentle Parent — Free
+      </a>
+      <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:8px;">
+        🤖 Android · <span style="color:var(--pink); font-weight:600;">iOS coming soon</span>
+      </p>
+      <a href="https://forms.gle/cSWeaPf1k68NpvZd8" class="btn-secondary" target="_blank" rel="noopener noreferrer">
+        💬 Leave a quick review
+      </a>
+    </div>
+
+    <p class="footer-note">
+      Available free. Guided by AI. Built in South Africa — for every parent who's just doing their best.
+    </p>
+    <p class="footer-brand">💗 Gentle Parent · Your AI parenting companion</p>
+  </footer>
+
+  <!-- Sticky bottom banner (appears after scroll) -->
+  <div class="sticky-banner" id="stickyBanner" aria-label="Open app shortcut">
+    <div class="banner-row">
+      <span class="banner-icon">🌱</span>
+      <div class="banner-copy">
+        <div class="banner-title">Gentle Parent</div>
+        <div class="banner-sub">Your AI parenting companion</div>
+      </div>
+      <a href="https://play.google.com/store/apps/details?id=com.mrnxele.GentleParent" class="banner-btn">Open App</a>
+    </div>
+  </div>
+
+  <!-- Flyer modal -->
+  <div class="flyer-modal" id="flyerModal" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="flyer-modal-bar">
+      <span class="flyer-modal-label">LAUNCH FLYER</span>
+      <button class="flyer-modal-close" onclick="document.getElementById('flyerModal').classList.remove('open')">✕</button>
+    </div>
+    <img src="/flyer.png" alt="Gentle Parent launch flyer" class="flyer-img" />
+    <a href="/flyer.png" download="GentleParent-Flyer.png" class="flyer-dl">⬇ Save &amp; Share</a>
+  </div>
+
+  <script>
+    /* ── Copy prompt ── */
+    function doCopy(id, btn) {
+      const text = document.getElementById(id).innerText;
+      const reset = () => { btn.textContent = '📋 Copy prompt'; btn.classList.remove('copied'); };
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = '✅ Copied!'; btn.classList.add('copied');
+          setTimeout(reset, 2500);
+        });
+      } else {
+        const range = document.createRange();
+        range.selectNode(document.getElementById(id));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        btn.textContent = '✅ Copied!'; btn.classList.add('copied');
+        setTimeout(reset, 2500);
+      }
+    }
+
+    /* ── Reaction buttons ── */
+    function pick(btn) {
+      document.querySelectorAll('.r-btn').forEach(b => b.classList.remove('picked'));
+      btn.classList.add('picked');
+    }
+
+    /* ── Progress bar ── */
+    const sections = [
+      { el: document.getElementById('step1'), pill: document.getElementById('p1') },
+      { el: document.getElementById('step2'), pill: document.getElementById('p2') },
+      { el: document.getElementById('step3'), pill: document.getElementById('p3') },
+    ];
+
+    function syncProgress() {
+      const y = window.scrollY + 90;
+      let active = 0;
+      sections.forEach((s, i) => { if (s.el && y >= s.el.offsetTop) active = i; });
+      sections.forEach((s, i) => {
+        s.pill.className = 'step-pill' + (i < active ? ' done' : i === active ? ' active' : '');
+      });
+    }
+
+    /* ── Sticky banner ── */
+    const banner = document.getElementById('stickyBanner');
+    function syncBanner() {
+      banner.classList.toggle('show', window.scrollY > 360);
+    }
+
+    /* ── Fade-in observer ── */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fi').forEach(el => io.observe(el));
+
+    /* ── Scroll ── */
+    window.addEventListener('scroll', () => { syncProgress(); syncBanner(); }, { passive: true });
+    syncProgress();
+  </script>
+</body>
+</html>

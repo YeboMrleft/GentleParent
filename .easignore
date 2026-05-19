@@ -1,0 +1,12 @@
+# Firebase website + functions (not needed for app build)
+public/
+functions/
+.firebase/
+
+# Editor + misc
+.vscode/
+**/*.md
+*.log
+
+# Git
+.git/

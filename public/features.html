@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#B02E6A">
+  <title>Gentle Parent · All Features</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --pink:        #C9397A;
+      --pink-deep:   #A02860;
+      --pink-light:  #FFE4EF;
+      --pink-soft:   #FFF0F7;
+      --gold:        #C8883A;
+      --plum:        #1E1220;
+      --plum-mid:    #5A3A54;
+      --muted:       #9A7080;
+      --bg:          #FDF5F9;
+      --white:       #FFFFFF;
+      --border:      rgba(201,57,122,0.11);
+      --shadow-xs:   0 1px 6px rgba(0,0,0,0.06);
+      --shadow-sm:   0 3px 14px rgba(0,0,0,0.08);
+      --shadow-md:   0 6px 28px rgba(0,0,0,0.11);
+      --r:           18px;
+      --r-lg:        24px;
+      --r-xl:        28px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; -webkit-tap-highlight-color:transparent; }
+    body {
+      font-family:'Inter', system-ui, sans-serif;
+      background:var(--bg);
+      color:var(--plum);
+      max-width:480px;
+      margin:0 auto;
+      overflow-x:hidden;
+      padding-bottom:100px;
+    }
+    ::-webkit-scrollbar { display:none; }
+
+    /* ── Nav ────────────────────────────────────── */
+    .nav {
+      position:sticky; top:0; z-index:100;
+      background:rgba(253,245,249,0.88);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      padding:14px 20px;
+      display:flex; align-items:center; gap:12px;
+    }
+    .nav-back {
+      font-size:13px; font-weight:700; color:var(--pink);
+      text-decoration:none; display:flex; align-items:center; gap:4px;
+    }
+    .nav-title {
+      font-size:13px; font-weight:800; color:var(--plum);
+      flex:1; text-align:center;
+    }
+    .nav-version {
+      background:linear-gradient(135deg,var(--pink),var(--pink-deep));
+      color:white; font-size:9px; font-weight:800; letter-spacing:1.2px;
+      padding:4px 10px; border-radius:20px; text-transform:uppercase;
+    }
+
+    /* ── Hero ────────────────────────────────────── */
+    .hero {
+      position:relative; overflow:hidden;
+      padding:44px 24px 48px;
+      text-align:center;
+      background:linear-gradient(160deg, #2A0A1C 0%, #5A1840 40%, #8B2260 70%, #C9397A 100%);
+    }
+    .hero-blob {
+      position:absolute; border-radius:50%; filter:blur(50px); opacity:0.35;
+      pointer-events:none;
+    }
+    .hero-blob-1 { width:260px; height:260px; background:#FF80AB; top:-80px; right:-60px; }
+    .hero-blob-2 { width:200px; height:200px; background:#CE93D8; bottom:-60px; left:-40px; }
+    .hero-badge {
+      position:relative;
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(255,255,255,0.15);
+      border:1px solid rgba(255,255,255,0.25);
+      backdrop-filter:blur(10px);
+      color:white; font-size:10px; font-weight:700; letter-spacing:1.4px;
+      padding:6px 14px; border-radius:20px;
+      margin-bottom:20px; text-transform:uppercase;
+    }
+    .hero h1 {
+      position:relative;
+      font-family:'Playfair Display', Georgia, serif;
+      font-size:30px; line-height:1.18; color:white;
+      margin-bottom:14px;
+    }
+    .hero h1 em { font-style:italic; color:#FFB3D1; }
+    .hero-sub {
+      position:relative;
+      font-size:13.5px; color:rgba(255,255,255,0.75); line-height:1.7;
+      max-width:340px; margin:0 auto 22px;
+    }
+    .hero-stats {
+      position:relative;
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,0.12);
+      border:1px solid rgba(255,255,255,0.2);
+      backdrop-filter:blur(12px);
+      border-radius:20px; padding:8px 18px;
+    }
+    .hero-stats-num {
+      font-size:20px; font-weight:900; color:white; line-height:1;
+    }
+    .hero-stats-label {
+      font-size:11px; color:rgba(255,255,255,0.7); font-weight:500; line-height:1.3;
+    }
+    .hero-divider {
+      width:1px; height:28px; background:rgba(255,255,255,0.2); margin:0 4px;
+    }
+
+    /* ── What's New ────────────────────────────────── */
+    .section-pad { padding:28px 20px 0; }
+    .section-label {
+      font-size:10px; font-weight:800; letter-spacing:2px;
+      text-transform:uppercase; color:var(--pink);
+      display:flex; align-items:center; gap:8px;
+      margin-bottom:14px;
+    }
+    .section-label::after {
+      content:''; flex:1; height:1px; background:linear-gradient(90deg, var(--border), transparent);
+    }
+
+    .wn-card {
+      background:linear-gradient(145deg, #1C2B1F 0%, #2A4030 100%);
+      border-radius:var(--r-lg);
+      padding:20px 18px;
+      border:1px solid rgba(76,175,80,0.2);
+      box-shadow:0 8px 32px rgba(0,0,0,0.18);
+      overflow:hidden; position:relative;
+    }
+    .wn-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg, #4CAF50, #81C784, #4CAF50);
+    }
+    .wn-glow {
+      position:absolute; width:180px; height:180px; border-radius:50%;
+      background:#4CAF50; filter:blur(60px); opacity:0.08;
+      top:-40px; right:-40px; pointer-events:none;
+    }
+    .wn-header {
+      display:flex; align-items:center; gap:8px; margin-bottom:16px;
+    }
+    .wn-header-title {
+      font-size:11px; font-weight:800; letter-spacing:1.8px;
+      color:#81C784; text-transform:uppercase;
+    }
+    .wn-header-pill {
+      margin-left:auto;
+      background:rgba(76,175,80,0.2); border:1px solid rgba(76,175,80,0.3);
+      font-size:9px; font-weight:700; letter-spacing:0.8px;
+      padding:3px 9px; border-radius:20px; color:#A5D6A7;
+    }
+    .wn-item {
+      display:flex; align-items:flex-start; gap:12px;
+      padding:11px 0;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .wn-item:last-child { border-bottom:none; padding-bottom:0; }
+    .wn-dot {
+      width:36px; height:36px; border-radius:10px; flex-shrink:0;
+      background:rgba(255,255,255,0.08);
+      display:flex; align-items:center; justify-content:center; font-size:18px;
+      margin-top:1px;
+    }
+    .wn-text { flex:1; }
+    .wn-name { font-size:13px; font-weight:700; color:white; margin-bottom:3px; }
+    .wn-desc { font-size:11.5px; color:rgba(255,255,255,0.55); line-height:1.55; }
+
+    /* ── Category header ────────────────────────────── */
+    .cat-header {
+      display:flex; align-items:center; gap:12px; margin-bottom:16px;
+    }
+    .cat-icon-wrap {
+      width:42px; height:42px; border-radius:13px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; flex-shrink:0;
+      box-shadow:var(--shadow-xs);
+    }
+    .cat-title { font-size:14px; font-weight:800; color:var(--plum); }
+    .cat-sub { font-size:11.5px; color:var(--muted); margin-top:2px; }
+
+    /* ── Feature grid ────────────────────────────────── */
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .grid-1 { display:grid; grid-template-columns:1fr; gap:11px; }
+    .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:11px; }
+
+    .f-card {
+      background:var(--white);
+      border-radius:var(--r);
+      padding:16px 14px 14px;
+      border:1px solid rgba(0,0,0,0.06);
+      box-shadow:var(--shadow-xs);
+      position:relative; overflow:hidden;
+      transition:transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .f-card:active { transform:scale(0.97); box-shadow:none; }
+    .f-card::after {
+      content:''; position:absolute;
+      top:0; left:0; right:0; height:3px;
+      background:var(--accent, var(--pink));
+      border-radius:4px 4px 0 0;
+    }
+    .f-card .shine {
+      position:absolute; top:0; right:0;
+      width:80px; height:80px; border-radius:50%;
+      background:var(--accent, var(--pink));
+      opacity:0.045; filter:blur(20px);
+      transform:translate(30%, -30%);
+      pointer-events:none;
+    }
+    .f-icon {
+      width:42px; height:42px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:21px; margin-bottom:11px;
+      position:relative;
+    }
+    .f-name {
+      font-size:13px; font-weight:800; color:var(--plum);
+      margin-bottom:5px; line-height:1.2;
+    }
+    .f-desc { font-size:11px; color:var(--muted); line-height:1.58; }
+    .f-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+    .f-tag {
+      font-size:8.5px; font-weight:700; letter-spacing:0.8px;
+      padding:3px 8px; border-radius:20px; text-transform:uppercase;
+    }
+
+    /* ── Companion card ────────────────────────────── */
+    .c-card {
+      background:var(--white);
+      border-radius:var(--r-lg);
+      padding:20px 16px;
+      border:1px solid rgba(0,0,0,0.06);
+      box-shadow:var(--shadow-sm);
+      position:relative; overflow:hidden;
+      transition:transform 0.16s;
+    }
+    .c-card:active { transform:scale(0.985); }
+    .c-card::after {
+      content:''; position:absolute;
+      top:0; left:0; right:0; height:3px;
+      background:var(--c-accent);
+    }
+    .c-glow {
+      position:absolute; width:160px; height:160px; border-radius:50%;
+      background:var(--c-accent); filter:blur(55px); opacity:0.07;
+      top:-40px; right:-40px; pointer-events:none;
+    }
+    .c-top { display:flex; align-items:flex-start; gap:14px; margin-bottom:14px; }
+    .c-avatar {
+      width:56px; height:56px; border-radius:16px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:28px;
+      position:relative;
+    }
+    .c-info { flex:1; }
+    .c-name { font-size:16px; font-weight:800; color:var(--plum); margin-bottom:3px; }
+    .c-role {
+      display:inline-block; font-size:9px; font-weight:800; letter-spacing:1.2px;
+      padding:3px 10px; border-radius:20px; text-transform:uppercase;
+    }
+    .c-desc { font-size:12px; color:var(--plum-mid); line-height:1.65; margin-bottom:13px; }
+    .c-powers {
+      display:flex; flex-wrap:wrap; gap:6px;
+    }
+    .c-power {
+      display:flex; align-items:center; gap:5px;
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:20px; padding:5px 10px;
+      font-size:10px; font-weight:600; color:var(--plum-mid);
+    }
+
+    /* ── Language chips ────────────────────────────── */
+    .lang-row {
+      display:flex; flex-wrap:wrap; gap:7px;
+      padding:0 20px; margin-top:14px;
+    }
+    .lang-chip {
+      font-size:10.5px; font-weight:700; color:var(--plum-mid);
+      background:white; border:1.5px solid var(--border);
+      padding:5px 12px; border-radius:20px;
+      box-shadow:var(--shadow-xs);
+    }
+
+    /* ── Divider ────────────────────────────────────── */
+    .divider {
+      height:1px;
+      background:linear-gradient(90deg, transparent 0%, rgba(201,57,122,0.12) 30%, rgba(201,57,122,0.12) 70%, transparent 100%);
+      margin:30px 20px 0;
+    }
+
+    /* ── Footer ────────────────────────────────────── */
+    .footer { padding:36px 20px 16px; }
+    .footer-headline {
+      font-family:'Playfair Display', Georgia, serif;
+      font-size:24px; line-height:1.2; text-align:center;
+      margin-bottom:10px;
+    }
+    .footer-sub {
+      font-size:13px; color:var(--plum-mid); line-height:1.65;
+      text-align:center; margin-bottom:24px;
+    }
+    .btn-dl {
+      display:flex; align-items:center; justify-content:center; gap:9px;
+      width:100%;
+      background:linear-gradient(135deg,#C9397A 0%,#8B1A55 100%);
+      color:white;
+      font-size:15px; font-weight:800; letter-spacing:0.3px;
+      padding:17px 24px; border-radius:var(--r); border:none;
+      cursor:pointer;
+      box-shadow:0 6px 24px rgba(201,57,122,0.38), 0 2px 8px rgba(201,57,122,0.18);
+      text-decoration:none; transition:all 0.2s;
+    }
+    .btn-dl:active { transform:scale(0.98); }
+    .os-note { font-size:11.5px; color:var(--muted); text-align:center; margin-top:10px; }
+
+    .tester-box {
+      margin-top:24px;
+      background:linear-gradient(145deg, #1E0F1A 0%, #3A1535 60%, #5A1840 100%);
+      border-radius:var(--r-xl); padding:22px 18px;
+      border:1px solid rgba(201,57,122,0.2);
+      box-shadow:0 8px 32px rgba(0,0,0,0.22);
+      position:relative; overflow:hidden;
+    }
+    .tester-glow {
+      position:absolute; width:200px; height:200px; border-radius:50%;
+      background:#C9397A; filter:blur(70px); opacity:0.12;
+      bottom:-60px; right:-60px; pointer-events:none;
+    }
+    .tester-label {
+      font-size:10px; font-weight:800; letter-spacing:2px;
+      color:#F0C070; text-transform:uppercase; margin-bottom:8px;
+    }
+    .tester-desc {
+      font-size:13px; line-height:1.65; color:rgba(255,255,255,0.65);
+      margin-bottom:16px;
+    }
+    .tester-step {
+      display:flex; align-items:center; gap:13px;
+      background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:14px; padding:13px 14px; text-decoration:none;
+      transition:background 0.2s;
+    }
+    .tester-step + .tester-step { margin-top:8px; }
+    .tester-step:active { background:rgba(255,255,255,0.12); }
+    .tester-num {
+      width:34px; height:34px; border-radius:9px; flex-shrink:0;
+      background:rgba(255,255,255,0.1);
+      display:flex; align-items:center; justify-content:center; font-size:16px;
+    }
+    .tester-step-title { font-size:13px; font-weight:700; color:white; }
+    .tester-step-sub { font-size:10.5px; color:rgba(255,255,255,0.45); margin-top:2px; }
+    .tester-arrow { margin-left:auto; font-size:16px; color:rgba(255,255,255,0.3); }
+    .tester-note {
+      font-size:10px; color:rgba(255,255,255,0.3);
+      text-align:center; margin-top:14px;
+    }
+
+    /* ── Animations ────────────────────────────────── */
+    .fi { opacity:0; transform:translateY(18px); transition:opacity 0.55s ease, transform 0.55s ease; }
+    .fi.vis { opacity:1; transform:translateY(0); }
+    .d1 { transition-delay:0.07s; } .d2 { transition-delay:0.13s; }
+    .d3 { transition-delay:0.19s; } .d4 { transition-delay:0.25s; }
+    .d5 { transition-delay:0.31s; } .d6 { transition-delay:0.37s; }
+    .d7 { transition-delay:0.43s; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="/" class="nav-back">← Back</a>
+    <span class="nav-title">All Features</span>
+    <span class="nav-version">v1.5</span>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+    <div class="hero-badge">🌱 Gentle Parent</div>
+    <h1>Everything built<br>to support <em>you</em></h1>
+    <p class="hero-sub">One app for the hard moments, the tender ones, and everything in between. For parents. By design.</p>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stats-num">35+</div>
+        <div class="hero-stats-label">Features</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div>
+        <div class="hero-stats-num">5</div>
+        <div class="hero-stats-label">Categories</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div>
+        <div class="hero-stats-num">11</div>
+        <div class="hero-stats-label">SA Languages</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tester box -->
+  <div style="padding: 20px 20px 0;">
+    <div class="tester-box">
+      <div class="tester-glow"></div>
+      <div class="tester-label">🧪 Become a Tester</div>
+      <p class="tester-desc">Get early access to new features before anyone else. Two quick steps:</p>
+
+      <a href="https://groups.google.com/g/mrpnxele" target="_blank" rel="noopener noreferrer" class="tester-step">
+        <div class="tester-num">1️⃣</div>
+        <div>
+          <div class="tester-step-title">Join the Testers Group</div>
+          <div class="tester-step-sub">Tap to join on Google Groups</div>
+        </div>
+        <span class="tester-arrow">→</span>
+      </a>
+
+      <a href="https://play.google.com/apps/testing/com.mrnxele.GentleParent" target="_blank" rel="noopener noreferrer" class="tester-step">
+        <div class="tester-num">2️⃣</div>
+        <div>
+          <div class="tester-step-title">Activate Test Access</div>
+          <div class="tester-step-sub">Opt in on the Play Store</div>
+        </div>
+        <span class="tester-arrow">→</span>
+      </a>
+
+      <p class="tester-note">After both steps, download from the Play Store as normal.</p>
+    </div>
+  </div>
+
+  <!-- What's New -->
+  <div class="section-pad fi">
+    <div class="section-label">✦ What's New</div>
+    <div class="wn-card">
+      <div class="wn-glow"></div>
+      <div class="wn-header">
+        <span style="font-size:20px;">🚀</span>
+        <span class="wn-header-title">Latest Update</span>
+        <span class="wn-header-pill">Version 1.5</span>
+      </div>
+
+      <div class="wn-item">
+        <div class="wn-dot">🧠</div>
+        <div class="wn-text">
+          <div class="wn-name">Mood-Aware Companions</div>
+          <div class="wn-desc">Lesedi and Bra K now read your daily mood and shift their tone — gentle when you need it, joyful when you're thriving.</div>
+        </div>
+      </div>
+
+      <div class="wn-item">
+        <div class="wn-dot">🇿🇦</div>
+        <div class="wn-text">
+          <div class="wn-name">SA Love Language — All 11 Languages</div>
+          <div class="wn-desc">Your companions now address you using authentic terms from isiZulu, isiXhosa, Sesotho, Setswana, Sepedi, Tshivenda, Afrikaans and more. Tell them what you prefer — they'll remember.</div>
+        </div>
+      </div>
+
+      <div class="wn-item">
+        <div class="wn-dot">🏥</div>
+        <div class="wn-text">
+          <div class="wn-name">Clinic Card Scanner Redesign</div>
+          <div class="wn-desc">Results now display in beautiful, clear sections — Visit Summary, Treatment Plan, and Health Notes.</div>
+        </div>
+      </div>
+
+      <div class="wn-item">
+        <div class="wn-dot">📚</div>
+        <div class="wn-text">
+          <div class="wn-name">Novel Corner — Fixed on All Devices</div>
+          <div class="wn-desc">Classics and AI-written stories now load reliably on every Android device. No more "couldn't load book".</div>
+        </div>
+      </div>
+
+      <div class="wn-item">
+        <div class="wn-dot">⚡</div>
+        <div class="wn-text">
+          <div class="wn-name">Performance & Fixes</div>
+          <div class="wn-desc">Smoother chat scrolling, medication alerts fixed, homework reminder now fires 6PM weekdays only, weather calibrated for SA climate.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ 1. AI PARENTING SUPPORT ═══ -->
+  <section class="section-pad">
+    <div class="section-label">💬 AI Parenting Support</div>
+    <div class="cat-header">
+      <div class="cat-icon-wrap" style="background:linear-gradient(135deg,#FFE4EF,#FFCCE0);">💬</div>
+      <div>
+        <div class="cat-title">Real advice for real moments</div>
+        <div class="cat-sub">Six specialist topics — always available, never judgmental</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="f-card fi" style="--accent:linear-gradient(90deg,#E8607A,#C9397A);">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FFE4EF;">🌊</div>
+        <div class="f-name">Tantrums &amp; Meltdowns</div>
+        <div class="f-desc">Calm strategies for public and home meltdowns.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#FFE4EF; color:#C9397A;">Most Used</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d1" style="--accent:#5B8FA8;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#D6EAFF;">🌙</div>
+        <div class="f-name">Sleep &amp; Bedtime</div>
+        <div class="f-desc">Routines, night wakings, and regressions — handled.</div>
+      </div>
+
+      <div class="f-card fi d2" style="--accent:#E07830;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FFE8CC;">🥦</div>
+        <div class="f-name">Picky Eating</div>
+        <div class="f-desc">No power struggles — just strategies that actually work.</div>
+      </div>
+
+      <div class="f-card fi d3" style="--accent:#4A9A50;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#D8F5D8;">🎯</div>
+        <div class="f-name">Activities &amp; Play</div>
+        <div class="f-desc">Screen-free, age-matched ideas for every stage.</div>
+      </div>
+
+      <div class="f-card fi d4" style="--accent:#7B5EA8;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#EEE4FF;">💛</div>
+        <div class="f-name">Big Emotions</div>
+        <div class="f-desc">Help children name feelings and move through them safely.</div>
+      </div>
+
+      <div class="f-card fi d5" style="--accent:#2A9A80;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#D0F5EC;">🌿</div>
+        <div class="f-name">Gentle Discipline</div>
+        <div class="f-desc">Boundaries without shame. Natural consequences that stick.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ 2. COMPANIONS ═══ -->
+  <section class="section-pad">
+    <div class="section-label">🤝 Your AI Companions</div>
+    <div class="cat-header">
+      <div class="cat-icon-wrap" style="background:linear-gradient(135deg,#EEE4FF,#D8C8FF);">🤖</div>
+      <div>
+        <div class="cat-title">Voices that feel like home</div>
+        <div class="cat-sub">Choose the companion that speaks your language</div>
+      </div>
+    </div>
+
+    <div class="grid-1">
+
+      <!-- Lesedi -->
+      <div class="c-card fi" style="--c-accent:linear-gradient(90deg,#8B6BB5,#6A4A94);">
+        <div class="c-glow" style="background:#8B6BB5;"></div>
+        <div class="c-top">
+          <div class="c-avatar" style="background:linear-gradient(135deg,#EEE4FF,#D8C8FF);">🌱</div>
+          <div class="c-info">
+            <div class="c-name">Lesedi</div>
+            <div class="c-role" style="background:#EEE4FF; color:#7B5EA8;">For Everyone</div>
+          </div>
+        </div>
+        <div class="c-desc">Your warm, wise AI companion — parenting advice, celebrity gossip, relationships, life chats, self-care and more. She reads your mood, addresses you in your home language, and adapts to whether you're a mom or a dad. Always non-judgmental. Always available.</div>
+        <div class="c-powers">
+          <span class="c-power">🧠 Mood-aware</span>
+          <span class="c-power">👤 Gender-aware</span>
+          <span class="c-power">🇿🇦 All 11 SA languages</span>
+          <span class="c-power">📡 Live news & gossip</span>
+        </div>
+      </div>
+
+      <!-- Girl Talk -->
+      <div class="c-card fi d1" style="--c-accent:linear-gradient(90deg,#C9397A,#A02860);">
+        <div class="c-glow" style="background:#C9397A;"></div>
+        <div class="c-top">
+          <div class="c-avatar" style="background:linear-gradient(135deg,#FFE4EF,#FFD0E5);">💅</div>
+          <div class="c-info">
+            <div class="c-name">Girl Talk</div>
+            <div class="c-role" style="background:#FFE4EF; color:#C9397A;">Moms &amp; Women</div>
+          </div>
+        </div>
+        <div class="c-desc">A private, judgement-free space just for women. Self-care, mental load, relationships, mom guilt, beauty, burnout, and gossip. She calls you sisi, mama, mbokodo, nkosazana — you belong here. Talk about anything. She holds space.</div>
+        <div class="c-powers">
+          <span class="c-power">🧠 Mood-aware</span>
+          <span class="c-power">💬 Free-chat mode</span>
+          <span class="c-power">🤫 Safe & private</span>
+        </div>
+      </div>
+
+      <!-- Bra K -->
+      <div class="c-card fi d2" style="--c-accent:linear-gradient(90deg,#3A6B4A,#2A5038);">
+        <div class="c-glow" style="background:#4CAF50;"></div>
+        <div class="c-top">
+          <div class="c-avatar" style="background:linear-gradient(135deg,#D4EAD8,#B8D8BE);">😎</div>
+          <div class="c-info">
+            <div class="c-name">Bra K</div>
+            <div class="c-role" style="background:#D4EAD8; color:#3A6B4A;">Kasi Vibes</div>
+          </div>
+        </div>
+        <div class="c-desc">Your streetwise homeboy from the kasi. Sports, cars, business, sneakers, real talk. He calls you broer, mfethu, ndoda, mjita, mogwera — properly. He drops the jokes when things are heavy, and hypes you up when you're winning. That's Bra K.</div>
+        <div class="c-powers">
+          <span class="c-power">🧠 Mood-aware</span>
+          <span class="c-power">⚽ Live sports scores</span>
+          <span class="c-power">🇿🇦 Kasi language</span>
+          <span class="c-power">👤 Gender-aware</span>
+        </div>
+      </div>
+
+    </div>
+
+    <p style="font-size:11px; color:var(--muted); margin:18px 0 10px; font-weight:700; text-align:center;">Your companions address you in all 11 official languages:</p>
+    <div class="lang-row" style="padding:0; justify-content:center;">
+      <span class="lang-chip">isiZulu</span>
+      <span class="lang-chip">isiXhosa</span>
+      <span class="lang-chip">Sesotho</span>
+      <span class="lang-chip">Setswana</span>
+      <span class="lang-chip">Sepedi</span>
+      <span class="lang-chip">Tshivenda</span>
+      <span class="lang-chip">Afrikaans</span>
+      <span class="lang-chip">English</span>
+      <span class="lang-chip">Kasi Slang</span>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ 3. SCHOOL HUB ═══ -->
+  <section class="section-pad">
+    <div class="section-label">🏫 School Hub</div>
+    <div class="cat-header">
+      <div class="cat-icon-wrap" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);">🏫</div>
+      <div>
+        <div class="cat-title">Everything school in one place</div>
+        <div class="cat-sub">From report cards to teacher messages — covered</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="f-card fi" style="--accent:#4CAF50;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E8F5E9;">📋</div>
+        <div class="f-name">Report Card Scanner</div>
+        <div class="f-desc">AI reads your child's marks and tells you exactly what to say.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#E8F5E9; color:#388E3C;">AI Vision</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d1" style="--accent:#E08A00;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FFF3E0;">📝</div>
+        <div class="f-name">Homework Helper</div>
+        <div class="f-desc">Photo the homework — get a plain-English explanation. Grades R–7.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#FFF3E0; color:#E08A00;">AI Vision</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d2" style="--accent:#1976D2;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E3F2FD;">✉️</div>
+        <div class="f-name">Message My Teacher</div>
+        <div class="f-desc">AI drafts a professional, respectful message for you instantly.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#E3F2FD; color:#1565C0;">AI Draft</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d3" style="--accent:#388E3C;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E8F5E9;">🎒</div>
+        <div class="f-name">School Readiness</div>
+        <div class="f-desc">25+ milestone checklist across 5 skill areas — with readiness percentage.</div>
+      </div>
+
+      <div class="f-card fi d4" style="--accent:#E64A19;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FBE9E7;">📅</div>
+        <div class="f-name">Term Planner</div>
+        <div class="f-desc">SA 2026 terms, public holidays, and custom events with progress tracking.</div>
+      </div>
+
+      <div class="f-card fi d5" style="--accent:#7B1FA2;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#F3E5F5;">🏫</div>
+        <div class="f-name">Grade R Prep Guide</div>
+        <div class="f-desc">Full SA guide — age requirements, skills checklist, and first-day tips.</div>
+      </div>
+
+      <div class="f-card fi d6" style="--accent:#0288D1; grid-column:1/-1;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E1F5FE;">⏰</div>
+        <div class="f-name">Homework Reminder</div>
+        <div class="f-desc">Daily 6PM nudge on weekdays to sit down with homework — for children 3 years and older. No weekend interruptions.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#E3F2FD; color:#0277BD;">Updated · Weekdays Only</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ 4. CHILD DEVELOPMENT ═══ -->
+  <section class="section-pad">
+    <div class="section-label">👶 Child Development</div>
+    <div class="cat-header">
+      <div class="cat-icon-wrap" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);">👶</div>
+      <div>
+        <div class="cat-title">Track, learn &amp; celebrate</div>
+        <div class="cat-sub">Every milestone, every stage</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="f-card fi" style="--accent:#1E88E5;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E3F2FD;">🌱</div>
+        <div class="f-name">Development Tracker</div>
+        <div class="f-desc">Milestone charts from 0–5 years with progress bars and age badges.</div>
+      </div>
+
+      <div class="f-card fi d1" style="--accent:#D32F2F;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FFEBEE;">🧸</div>
+        <div class="f-name">Learn &amp; Play</div>
+        <div class="f-desc">Toys, activities, and DIY projects per age range — with video guides.</div>
+      </div>
+
+      <div class="f-card fi d2" style="--accent:#43A047; grid-column:1/-1;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E8F5E9;">✅</div>
+        <div class="f-name">Chore Chart</div>
+        <div class="f-desc">Add chores, tick them off daily, and earn star rewards. Builds responsibility from an early age.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ 5. HOME, HEALTH & WELLBEING ═══ -->
+  <section class="section-pad">
+    <div class="section-label">🏡 Home, Health &amp; Wellbeing</div>
+    <div class="cat-header">
+      <div class="cat-icon-wrap" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);">🏡</div>
+      <div>
+        <div class="cat-title">Daily tools for the whole family</div>
+        <div class="cat-sub">Keep things running smoothly, every day</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="f-card fi" style="--accent:#E64A19;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FBE9E7;">😊</div>
+        <div class="f-name">Mood Check-In</div>
+        <div class="f-desc">Log your daily mood — your companions pick it up and adjust their tone to match.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#E8F5E9; color:#2E7D32;">Now powers companions</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d1" style="--accent:#D81B60;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FCE4EC;">🎂</div>
+        <div class="f-name">Birthday Widget</div>
+        <div class="f-desc">Your child's age, countdown, and a little celebration on the day.</div>
+      </div>
+
+      <div class="f-card fi d2" style="--accent:#0288D1;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E1F5FE;">🌤️</div>
+        <div class="f-name">Weather Widget</div>
+        <div class="f-desc">Live weather, SA-calibrated temperatures, outfit tips — now covers all your children by name.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#E3F2FD; color:#0277BD;">Updated</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d3" style="--accent:#5E35B1;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#EDE7F6;">😴</div>
+        <div class="f-name">White Noise Player</div>
+        <div class="f-desc">Rain, ocean, forest — 5 sleep sounds with timers. A bedtime game-changer.</div>
+      </div>
+
+      <div class="f-card fi d4" style="--accent:#2E7D32;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E8F5E9;">💊</div>
+        <div class="f-name">Meds &amp; Vitamins</div>
+        <div class="f-desc">Reminders for your whole family. Notifications now fire reliably — every time.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#E8F5E9; color:#2E7D32;">Fixed</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d5" style="--accent:#00897B;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#E0F2F1;">🏥</div>
+        <div class="f-name">Clinic Card Scanner</div>
+        <div class="f-desc">Scan your Road to Health booklet — AI organises it into Visit Summary, Treatment Plan, and Health Notes.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#E0F2F1; color:#00695C;">AI Vision</span>
+          <span class="f-tag" style="background:#E3F2FD; color:#0277BD;">Redesigned</span>
+        </div>
+      </div>
+
+      <div class="f-card fi d6" style="--accent:#C9397A; grid-column:1/-1;">
+        <div class="shine"></div>
+        <div class="f-icon" style="background:#FFE4EF;">📚</div>
+        <div class="f-name">Novel Corner</div>
+        <div class="f-desc">A reading escape for parents — 6 classic novels plus AI-written Mom Lit stories made for South African life. Now loads reliably on all devices.</div>
+        <div class="f-tags">
+          <span class="f-tag" style="background:#FFE4EF; color:#C9397A;">✨ Premium</span>
+          <span class="f-tag" style="background:#E8F5E9; color:#2E7D32;">Fixed</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider" style="margin-top:30px;"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <h2 class="footer-headline">Ready to try<br><em style="color:var(--pink); font-style:italic;">all of this?</em></h2>
+    <p class="footer-sub">Download free on Android. No account needed to get started.</p>
+    <a href="https://play.google.com/store/apps/details?id=com.mrnxele.GentleParent" class="btn-dl">
+      <span style="font-size:20px;">📱</span> Download on Android — Free
+    </a>
+    <p class="os-note">🤖 Android · <span style="color:var(--pink); font-weight:700;">iOS coming soon</span></p>
+
+  </footer>
+
+  <script>
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.06 });
+    document.querySelectorAll('.fi').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>
