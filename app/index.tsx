@@ -721,21 +721,30 @@ if (screen === 'settings') {
 
   if (screen === 'schoolHub') {
     return (
-      <SchoolHubScreen
-        childName={childName}
-        childBirthday={childBirthday}
-        theme={theme}
-        isDarkMode={isDarkMode}
-        onClose={() => setScreen('home')}
-        onReportCard={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('reportCard') : openPaywall()}
-        onHomework={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('homeworkHelper') : openPaywall()}
-        onTeacherComms={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('teacherComms') : openPaywall()}
-        onSchoolReadiness={() => setScreen('schoolReadiness')}
-        onTermPlanner={() => setScreen('termPlanner')}
-        onGradeRGuide={() => setScreen('gradeRGuide')}
-        onHomeworkReminder={() => setScreen('homeworkReminder')}
-        onSchoolSchedule={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('schoolSchedule') : openPaywall()}
-      />
+      <>
+        <SchoolHubScreen
+          childName={childName}
+          childBirthday={childBirthday}
+          theme={theme}
+          isDarkMode={isDarkMode}
+          onClose={() => setScreen('home')}
+          onReportCard={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('reportCard') : openPaywall()}
+          onHomework={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('homeworkHelper') : openPaywall()}
+          onTeacherComms={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('teacherComms') : openPaywall()}
+          onSchoolReadiness={() => setScreen('schoolReadiness')}
+          onTermPlanner={() => setScreen('termPlanner')}
+          onGradeRGuide={() => setScreen('gradeRGuide')}
+          onHomeworkReminder={() => setScreen('homeworkReminder')}
+          onSchoolSchedule={() => (isPremium || UNLOCK_ALL_SCREENS) ? setScreen('schoolSchedule') : openPaywall()}
+        />
+        <PaywallModal
+          visible={showPaywall}
+          onClose={() => setShowPaywall(false)}
+          onSubscribe={handleSubscribe}
+          onRestore={handleRestore}
+          parentGender={parentGender}
+        />
+      </>
     );
   }
 
