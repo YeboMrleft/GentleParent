@@ -31,6 +31,7 @@ export async function trackConversationActivity(
   companionName: string,
   lastMessage?: string,
   userName?: string,
+  parentGender?: string,
 ): Promise<void> {
   const now = Date.now();
   await AsyncStorage.setItem(LAST_ACTIVE_KEY(companionId), String(now));
@@ -43,7 +44,7 @@ export async function trackConversationActivity(
   let body = FALLBACK_BODIES[companionId];
   if (lastMessage) {
     try {
-      const aiFollowUp = await generateCompanionFollowUp(companionId, lastMessage, userName);
+      const aiFollowUp = await generateCompanionFollowUp(companionId, lastMessage, userName, parentGender);
       if (aiFollowUp) body = aiFollowUp;
     } catch {
       // use fallback

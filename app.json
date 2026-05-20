@@ -2,7 +2,7 @@
   "expo": {
     "name": "GentleParent",
     "slug": "GentleParent",
-    "version": "1.5.2",
+    "version": "1.5.3",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "gentleparent",
@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-      "versionCode": 14,
+      "versionCode": 15,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

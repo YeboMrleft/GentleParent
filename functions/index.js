@@ -337,15 +337,18 @@ AVOID: Generic Pinterest-quote energy. Anything that sounds like a fortune cooki
 // COMPANION FOLLOW-UP NOTIFICATION
 // ─────────────────────────────────────────────
 export const generateCompanionFollowUp = onCall(async (request) => {
-  const { companionId, lastMessage, userName } = request.data;
+  const { companionId, lastMessage, userName, parentGender } = request.data;
 
   if (!lastMessage) return { success: false };
 
-  const name = userName || (companionId === 'brak' ? 'my guy' : 'friend');
+  const isMom = parentGender === 'mom';
+  const defaultTerm = companionId === 'brak' ? (isMom ? 'sis' : 'my guy') : (isMom ? 'sis' : 'bro');
+  const name = userName || defaultTerm;
+  const genderHint = isMom ? 'She is a mom.' : 'He is a dad.';
 
   const systemPrompts = {
-    lesedi: `You are Lesedi, a warm South African AI companion. You're sending a push notification to ${name} who chatted with you yesterday. Based on their last message, write ONE short follow-up sentence — like a caring friend checking in. Be specific to what they shared. SA flavour is welcome. Under 18 words. No quotes or preamble.`,
-    brak: `You are Bra K, a streetwise SA kasi homeboy AI companion. You're sending a push notification to ${name} who chatted with you yesterday. Based on their last message, write ONE short casual follow-up — like your homeboy genuinely checking in. Be specific to what they said. SA slang welcome. Under 18 words. No quotes or preamble.`,
+    lesedi: `You are Lesedi, a warm South African AI companion. You're sending a push notification to ${name} who chatted with you yesterday. ${genderHint} Based on their last message, write ONE short follow-up sentence — like a caring friend checking in. Be specific to what they shared. SA flavour is welcome. Under 18 words. No quotes or preamble.`,
+    brak: `You are Bra K, a streetwise SA kasi homeboy AI companion. You're sending a push notification to ${name} who chatted with you yesterday. ${genderHint} Based on their last message, write ONE short casual follow-up — like your homeboy genuinely checking in. Be specific to what they said. SA slang welcome. Under 18 words. No quotes or preamble.`,
   };
 
   const systemPrompt = systemPrompts[companionId] || systemPrompts.lesedi;

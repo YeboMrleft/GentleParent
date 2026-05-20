@@ -48,9 +48,10 @@ export const generateCompanionFollowUp = async (
   companionId: string,
   lastMessage: string,
   userName?: string,
+  parentGender?: string,
 ): Promise<string | null> => {
   try {
-    const result = await generateCompanionFollowUpFunction({ companionId, lastMessage, userName });
+    const result = await generateCompanionFollowUpFunction({ companionId, lastMessage, userName, parentGender });
     const data = result.data as any;
     return data.success ? (data.data as string) : null;
   } catch {

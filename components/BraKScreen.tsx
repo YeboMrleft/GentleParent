@@ -244,7 +244,7 @@ export default function BraKScreen({
     setMessages((prev) => [...prev, botMessage]);
     const newCount = await incrementCompanionMessageCount();
     onMsgSent(newCount);
-    trackConversationActivity('brak', 'Bra K', text.trim(), userName);
+    trackConversationActivity('brak', 'Bra K', text.trim(), userName, parentGender);
     const topic = detectTopic(text.trim());
     if (topic) trackTopicEngagement(topic);
 

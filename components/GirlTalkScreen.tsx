@@ -242,7 +242,7 @@ export default function GirlTalkScreen({
     setMessages((prev) => [...prev, botMessage]);
     const newCount = await incrementCompanionMessageCount();
     onMsgSent(newCount);
-    trackConversationActivity('lesedi', 'Lesedi', question, userName);
+    trackConversationActivity('lesedi', 'Lesedi', question, userName, parentGender);
     const qTopic = detectLesediTopic(question);
     if (qTopic) trackLesediTopicEngagement(qTopic);
 
@@ -280,7 +280,7 @@ export default function GirlTalkScreen({
     setMessages((prev) => [...prev, botMessage]);
     const newCount = await incrementCompanionMessageCount();
     onMsgSent(newCount);
-    trackConversationActivity('lesedi', 'Lesedi', sentText, userName);
+    trackConversationActivity('lesedi', 'Lesedi', sentText, userName, parentGender);
     const sTopic = detectLesediTopic(sentText);
     if (sTopic) trackLesediTopicEngagement(sTopic);
 
