@@ -20,6 +20,11 @@
       "android": {
         "buildType": "app-bundle"
       }
+    },
+    "huawei": {
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
