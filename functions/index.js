@@ -1,4 +1,10 @@
-import { onCall } from 'firebase-functions/v2/https';
+import { onCall, onRequest } from 'firebase-functions/v2/https';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import crypto from 'crypto';
+
+if (!getApps().length) initializeApp();
+const adminDb = getFirestore();
 import OpenAI from 'openai';
 
 // ─────────────────────────────────────────────
@@ -370,6 +376,102 @@ export const generateCompanionFollowUp = onCall(async (request) => {
   } catch (error) {
     console.error('❌ Error in generateCompanionFollowUp:', error);
     return { success: false };
+  }
+});
+
+// ─────────────────────────────────────────────
+// PAYFAST — CREATE PAYMENT URL
+// ─────────────────────────────────────────────
+
+function pfSignature(data, passphrase) {
+  const str = Object.keys(data)
+    .sort()
+    .filter(k => data[k] !== '' && data[k] != null)
+    .map(k => `${k}=${encodeURIComponent(String(data[k]))}`)
+    .join('&');
+  const sigStr = passphrase ? `${str}&passphrase=${encodeURIComponent(passphrase)}` : str;
+  return crypto.createHash('md5').update(sigStr).digest('hex');
+}
+
+export const createPayfastPayment = onCall(
+  { secrets: ['PAYFAST_MERCHANT_ID', 'PAYFAST_MERCHANT_KEY', 'PAYFAST_PASSPHRASE', 'PAYFAST_NOTIFY_URL'] },
+  async (request) => {
+    const { installId, name = 'User' } = request.data;
+    if (!installId) return { success: false };
+
+    const merchantId  = process.env.PAYFAST_MERCHANT_ID;
+    const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
+    const passphrase  = process.env.PAYFAST_PASSPHRASE ?? '';
+    const notifyUrl   = process.env.PAYFAST_NOTIFY_URL ?? '';
+    const sandbox     = process.env.PAYFAST_SANDBOX === 'true';
+    const today       = new Date().toISOString().split('T')[0];
+
+    const pfData = {
+      merchant_id:       merchantId,
+      merchant_key:      merchantKey,
+      return_url:        'gentleparent://premium-activated',
+      cancel_url:        'gentleparent://premium-cancelled',
+      notify_url:        notifyUrl,
+      name_first:        (name.split(' ')[0] || 'User').slice(0, 100),
+      m_payment_id:      installId,
+      amount:            '69.00',
+      item_name:         'GentleParent Premium Monthly',
+      subscription_type: '1',
+      billing_date:      today,
+      recurring_amount:  '69.00',
+      frequency:         '3',
+      cycles:            '0',
+    };
+
+    const signature = pfSignature(pfData, passphrase);
+    const base = sandbox
+      ? 'https://sandbox.payfast.co.za/eng/process'
+      : 'https://www.payfast.co.za/eng/process';
+
+    const params = new URLSearchParams({ ...pfData, signature });
+    return { success: true, url: `${base}?${params.toString()}` };
+  }
+);
+
+// ─────────────────────────────────────────────
+// PAYFAST — ITN RECEIVER
+// ─────────────────────────────────────────────
+
+export const payfastItn = onRequest(async (req, res) => {
+  if (req.method !== 'POST') { res.status(405).send('Method Not Allowed'); return; }
+
+  const data          = req.body ?? {};
+  const installId     = data.m_payment_id;
+  const paymentStatus = data.payment_status;
+
+  if (installId && paymentStatus === 'COMPLETE') {
+    try {
+      await adminDb.collection('huawei_premiums').doc(installId).set({
+        activated:   true,
+        activatedAt: new Date(),
+        pfPaymentId: data.pf_payment_id ?? '',
+        amount:      parseFloat(data.amount_gross ?? '0'),
+      }, { merge: true });
+    } catch (e) {
+      console.error('payfastItn Firestore error:', e);
+    }
+  }
+
+  res.status(200).send('OK');
+});
+
+// ─────────────────────────────────────────────
+// PAYFAST — CHECK PREMIUM STATUS
+// ─────────────────────────────────────────────
+
+export const checkHuaweiPremium = onCall(async (request) => {
+  const { installId } = request.data;
+  if (!installId) return { premium: false };
+  try {
+    const doc = await adminDb.collection('huawei_premiums').doc(installId).get();
+    return { premium: doc.exists && doc.data()?.activated === true };
+  } catch {
+    return { premium: false };
   }
 });
 

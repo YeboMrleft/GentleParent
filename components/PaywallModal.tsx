@@ -16,6 +16,7 @@ interface Props {
   onSubscribe: (plan: string) => void;
   onRestore: () => void;
   parentGender: string;
+  onPayFast?: () => void;
 }
 
 const FEATURES = [
@@ -29,7 +30,7 @@ const FEATURES = [
   { icon: '📖', label: 'Novel\nCorner' },
 ];
 
-export default function PaywallModal({ visible, onClose, onSubscribe, onRestore, parentGender }: Props) {
+export default function PaywallModal({ visible, onClose, onSubscribe, onRestore, parentGender, onPayFast }: Props) {
   const scaleAnim = useRef(new Animated.Value(0.88)).current;
 
   const isMom   = parentGender === 'mom';
@@ -94,6 +95,18 @@ export default function PaywallModal({ visible, onClose, onSubscribe, onRestore,
             >
               <Text style={styles.ctaText}>Unlock Premium</Text>
             </TouchableOpacity>
+
+            {/* PayFast alternative (Huawei / web payment) */}
+            {onPayFast && (
+              <TouchableOpacity
+                style={[styles.payfastBtn, { borderColor: accent + '55' }]}
+                onPress={() => { playClickSound(); onPayFast(); }}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.payfastText, { color: accent2 }]}>Pay via PayFast</Text>
+                <Text style={styles.payfastSub}>Card · EFT · SnapScan · Ozow</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Footer links */}
             <View style={styles.footer}>
@@ -166,6 +179,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 5, borderBottomColor: 'rgba(0,0,0,0.13)',
   },
   ctaText: { color: '#FFF', fontSize: 17, fontWeight: '800', letterSpacing: 0.3 },
+
+  payfastBtn: {
+    marginHorizontal: 16, borderRadius: 16, paddingVertical: 13,
+    alignItems: 'center', borderWidth: 1.5, marginTop: 8, backgroundColor: '#FAFAFA',
+  },
+  payfastText: { fontSize: 14, fontWeight: '700' },
+  payfastSub:  { fontSize: 11, color: '#AAA', marginTop: 2 },
 
   footer: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',

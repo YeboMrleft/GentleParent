@@ -32,6 +32,9 @@ import SchoolReadinessTracker from '../components/SchoolReadinessTracker';
 import SettingsScreen from '../components/SettingsScreen';
 import TeacherCommsScreen from '../components/TeacherCommsScreen';
 import TermPlanner from '../components/TermPlanner';
+import * as WebBrowser from 'expo-web-browser';
+import { createPayfastPaymentUrl, checkHuaweiPremium } from '../services/firebase';
+import { isHuaweiDevice, getInstallId } from '../utils/platform';
 import { requestNotificationPermission } from '../services/notificationService';
 import { Analytics, registerInstall } from '../services/analytics';
 import { getNotifSettings, rescheduleMedicationReminders, scheduleDailyTip, scheduleChildBirthdayReminder, scheduleChoreReminder, scheduleCompanionCheckIn, scheduleEngagementNotifications, scheduleGirlTalkReminder, scheduleHomeworkReminder, scheduleNovelSpotlight, scheduleWeatherNotification, setupNotifications } from '../utils/notifications';
@@ -281,6 +284,27 @@ export default function Index() {
     }
   };
 
+const handlePayFastSubscribe = async () => {
+    try {
+      const installId = await getInstallId();
+      const url = await createPayfastPaymentUrl(installId, userName || 'User');
+      if (!url) { Alert.alert('Error', 'Could not create payment link. Please try again.'); return; }
+      await WebBrowser.openBrowserAsync(url);
+      // Give ITN a moment to arrive then check Firestore
+      await new Promise(r => setTimeout(r, 2500));
+      const premium = await checkHuaweiPremium(installId);
+      if (premium) {
+        setIsPremium(true);
+        setShowPaywall(false);
+        Analytics.premiumConverted('payfast_monthly');
+      } else {
+        Alert.alert('Payment pending', 'If you completed payment, your premium will activate within a minute. Tap "Restore Purchase" to check again.');
+      }
+    } catch {
+      Alert.alert('Payment error', 'Could not open payment page. Please try again.');
+    }
+  };
+
 const handleSetThemeMode = async (mode: 'light' | 'dark' | 'system') => {
   setThemeMode(mode);
   await AsyncStorage.setItem('theme_mode', mode);
@@ -397,6 +421,17 @@ useEffect(() => {
       await refreshPremiumStatus();
     } else {
       setIsPremium(false);
+    }
+
+    // On Huawei (no GMS), check PayFast premium from Firestore
+    if (isHuaweiDevice()) {
+      try {
+        const installId = await getInstallId();
+        const huaweiPremium = await checkHuaweiPremium(installId);
+        if (huaweiPremium) setIsPremium(true);
+      } catch {
+        // non-fatal — user can always restore via PayFast button
+      }
     }
 
     // Initialize sounds
@@ -548,6 +583,7 @@ if (screen === 'chat' && selectedCategory) {
         onSubscribe={handleSubscribe}
         onRestore={handleRestore}
         parentGender={parentGender}
+        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePayFastSubscribe : undefined}
       />
     </>
   );
@@ -572,6 +608,7 @@ if (screen === 'girlTalk') {
         onSubscribe={handleSubscribe}
         onRestore={handleRestore}
         parentGender={parentGender}
+        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePayFastSubscribe : undefined}
       />
     </>
   );
@@ -594,6 +631,7 @@ if (screen === 'braK') {
         onSubscribe={handleSubscribe}
         onRestore={handleRestore}
         parentGender={parentGender}
+        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePayFastSubscribe : undefined}
       />
     </>
   );

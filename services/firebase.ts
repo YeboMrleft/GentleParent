@@ -177,3 +177,30 @@ export const parentingAdviceResponse = async (
     userMood,
   );
 };
+
+// ── PayFast (Huawei / web payment) ────────────────────────────────────────────
+
+const createPayfastPaymentFn = httpsCallable(functions, 'createPayfastPayment');
+const checkHuaweiPremiumFn   = httpsCallable(functions, 'checkHuaweiPremium');
+
+export const createPayfastPaymentUrl = async (
+  installId: string,
+  name: string,
+): Promise<string | null> => {
+  try {
+    const result = await createPayfastPaymentFn({ installId, name });
+    const d = result.data as any;
+    return d.success ? (d.url as string) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const checkHuaweiPremium = async (installId: string): Promise<boolean> => {
+  try {
+    const result = await checkHuaweiPremiumFn({ installId });
+    return (result.data as any)?.premium === true;
+  } catch {
+    return false;
+  }
+};
