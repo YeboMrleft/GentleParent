@@ -34,7 +34,8 @@ import SettingsScreen from '../components/SettingsScreen';
 import TeacherCommsScreen from '../components/TeacherCommsScreen';
 import TermPlanner from '../components/TermPlanner';
 import * as WebBrowser from 'expo-web-browser';
-import { createPayfastPaymentUrl, checkHuaweiPremium } from '../services/firebase';
+import { createPayfastPaymentUrl, checkHuaweiPremium, onAuthChange } from '../services/firebase';
+import AccountScreen from '../components/AccountScreen';
 import { isHuaweiDevice, getInstallId } from '../utils/platform';
 import { requestNotificationPermission } from '../services/notificationService';
 import { Analytics, registerInstall } from '../services/analytics';
@@ -95,6 +96,7 @@ type Screen =
   | 'companions'
   | 'about'
   | 'settings'
+  | 'account'
   | 'notificationCentre'
   | 'schoolHub'
   | 'reportCard'
@@ -285,6 +287,30 @@ function IndexContent() {
       Alert.alert('Restore failed', 'Could not restore purchases right now. Please try again.');
     }
   };
+
+// Web: paywall "Pay via PayFast" routes to the Account screen (sign in → subscribe).
+const handlePaywallPayFast = () => {
+  if (Platform.OS === 'web') { setShowPaywall(false); setScreen('account'); }
+  else handlePayFastSubscribe();
+};
+
+// Web: restore Premium for a signed-in account, and finish a PayFast return.
+useEffect(() => {
+  if (Platform.OS !== 'web') return;
+  let isReturn = false;
+  try { isReturn = new URLSearchParams(window.location.search).get('sub') === 'success'; } catch {}
+  const unsub = onAuthChange((u) => {
+    if (!u || u.isAnonymous) return;
+    (async () => {
+      for (let i = 0; i < (isReturn ? 6 : 1); i++) {
+        const premium = await checkHuaweiPremium(u.uid);
+        if (premium) { setIsPremium(true); break; }
+        if (isReturn) await new Promise((r) => setTimeout(r, 2500));
+      }
+    })();
+  });
+  return unsub;
+}, []);
 
 const handlePayFastSubscribe = async () => {
     try {
@@ -597,7 +623,7 @@ if (screen === 'chat' && selectedCategory) {
         onSubscribe={handleSubscribe}
         onRestore={handleRestore}
         parentGender={parentGender}
-        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePayFastSubscribe : undefined}
+        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePaywallPayFast : undefined}
       />
     </>
   );
@@ -622,7 +648,7 @@ if (screen === 'girlTalk') {
         onSubscribe={handleSubscribe}
         onRestore={handleRestore}
         parentGender={parentGender}
-        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePayFastSubscribe : undefined}
+        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePaywallPayFast : undefined}
       />
     </>
   );
@@ -645,7 +671,7 @@ if (screen === 'braK') {
         onSubscribe={handleSubscribe}
         onRestore={handleRestore}
         parentGender={parentGender}
-        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePayFastSubscribe : undefined}
+        onPayFast={(!isPurchasesConfigured || isHuaweiDevice()) ? handlePaywallPayFast : undefined}
       />
     </>
   );
@@ -695,10 +721,22 @@ if (screen === 'learnPlay') {
     );
   }
 
+if (screen === 'account') {
+  return (
+    <AccountScreen
+      onClose={() => setScreen('settings')}
+      userName={userName}
+      isPremium={isPremium}
+      onPremiumChange={setIsPremium}
+    />
+  );
+}
+
 if (screen === 'settings') {
   return (
     <SettingsScreen
       userName={userName}
+      onAccount={Platform.OS === 'web' ? () => setScreen('account') : undefined}
       childName={childName}
       childBirthday={childBirthday}        // ← add this
       parentGender={parentGender}

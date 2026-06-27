@@ -1,4 +1,5 @@
 import { onCall, onRequest } from 'firebase-functions/v2/https';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import crypto from 'crypto';
@@ -268,32 +269,25 @@ export const generateStory = onCall({ secrets: ['OPENAI_API_KEY'] }, async (requ
 });
 
 // ─────────────────────────────────────────────
-// VISION — image analysis (report card, homework)
+// VISION — image analysis via Gemini 1.5 Flash (free tier)
 // ─────────────────────────────────────────────
-export const analyzeImage = onCall({ secrets: ['OPENAI_API_KEY'] }, async (request) => {
-  const { base64Image, prompt, mimeType = 'image/jpeg', maxTokens = 2500, model = 'gpt-4o-mini' } = request.data;
+export const analyzeImage = onCall({ secrets: ['GEMINI_API_KEY'] }, async (request) => {
+  const { base64Image, prompt, mimeType = 'image/jpeg' } = request.data;
 
   if (!base64Image || !prompt) {
     return { success: false, fallback: 'Missing image or prompt.' };
   }
 
   try {
-    const openai = getOpenAIClient();
-    const response = await openai.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } },
-            { type: 'text', text: prompt },
-          ],
-        },
-      ],
-      max_tokens: Math.min(maxTokens, 4000),
-    });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const text = response.choices?.[0]?.message?.content ?? '';
+    const result = await model.generateContent([
+      { inlineData: { mimeType, data: base64Image } },
+      prompt,
+    ]);
+
+    const text = result.response.text();
     return { success: true, data: text };
   } catch (error) {
     console.error('❌ Error in analyzeImage:', error);
@@ -396,8 +390,11 @@ function pfSignature(data, passphrase) {
 export const createPayfastPayment = onCall(
   { secrets: ['PAYFAST_MERCHANT_ID', 'PAYFAST_MERCHANT_KEY', 'PAYFAST_PASSPHRASE', 'PAYFAST_NOTIFY_URL'] },
   async (request) => {
-    const { installId, name = 'User' } = request.data;
-    if (!installId) return { success: false };
+    // `uid` keys account-based (web) subscriptions; `installId` keys device-based
+    // (Huawei) ones. Either works as the PayFast m_payment_id.
+    const { installId, uid, name = 'User', email, web } = request.data;
+    const paymentId = uid || installId;
+    if (!paymentId) return { success: false };
 
     const merchantId  = process.env.PAYFAST_MERCHANT_ID;
     const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
@@ -406,14 +403,19 @@ export const createPayfastPayment = onCall(
     const sandbox     = process.env.PAYFAST_SANDBOX === 'true';
     const today       = new Date().toISOString().split('T')[0];
 
+    // Web pays in a browser → needs https return URLs. Native uses deep links.
+    const returnUrl = web ? 'https://gentleparent-app.web.app/?sub=success'   : 'gentleparent://premium-activated';
+    const cancelUrl = web ? 'https://gentleparent-app.web.app/?sub=cancelled' : 'gentleparent://premium-cancelled';
+
     const pfData = {
       merchant_id:       merchantId,
       merchant_key:      merchantKey,
-      return_url:        'gentleparent://premium-activated',
-      cancel_url:        'gentleparent://premium-cancelled',
+      return_url:        returnUrl,
+      cancel_url:        cancelUrl,
       notify_url:        notifyUrl,
       name_first:        (name.split(' ')[0] || 'User').slice(0, 100),
-      m_payment_id:      installId,
+      ...(email ? { email_address: String(email).slice(0, 255) } : {}),
+      m_payment_id:      paymentId,
       amount:            '69.00',
       item_name:         'GentleParent Premium Monthly',
       subscription_type: '1',
@@ -423,13 +425,21 @@ export const createPayfastPayment = onCall(
       cycles:            '0',
     };
 
-    const signature = pfSignature(pfData, passphrase);
+    // PayFast signature: fields in submission order, spaces as '+', then passphrase.
+    // (Must match the submitted query exactly — do NOT sort.)
+    const encode = (v) => encodeURIComponent(String(v)).replace(/%20/g, '+');
+    const queryString = Object.keys(pfData)
+      .filter((k) => pfData[k] !== '' && pfData[k] != null)
+      .map((k) => `${k}=${encode(pfData[k])}`)
+      .join('&');
+    const stringToHash = passphrase ? `${queryString}&passphrase=${encode(passphrase)}` : queryString;
+    const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
+
     const base = sandbox
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
-    const params = new URLSearchParams({ ...pfData, signature });
-    return { success: true, url: `${base}?${params.toString()}` };
+    return { success: true, url: `${base}?${queryString}&signature=${signature}` };
   }
 );
 
@@ -437,43 +447,141 @@ export const createPayfastPayment = onCall(
 // PAYFAST — ITN RECEIVER
 // ─────────────────────────────────────────────
 
-export const payfastItn = onRequest(async (req, res) => {
-  if (req.method !== 'POST') { res.status(405).send('Method Not Allowed'); return; }
+export const payfastItn = onRequest(
+  { secrets: ['PAYFAST_MERCHANT_ID', 'PAYFAST_PASSPHRASE'] },
+  async (req, res) => {
+    if (req.method !== 'POST') { res.status(405).send('Method Not Allowed'); return; }
 
-  const data          = req.body ?? {};
-  const installId     = data.m_payment_id;
-  const paymentStatus = data.payment_status;
+    const data = req.body ?? {};
 
-  if (installId && paymentStatus === 'COMPLETE') {
+    // 1. Merchant ID must match ours — reject spoofed notifications.
+    if (data.merchant_id !== process.env.PAYFAST_MERCHANT_ID) {
+      console.warn('ITN rejected: merchant_id mismatch');
+      res.status(200).send('OK');
+      return;
+    }
+
+    // 2. Server confirmation — post the data back to PayFast and require VALID.
+    //    This is PayFast's recommended validation and avoids signature-order pitfalls.
     try {
-      await adminDb.collection('huawei_premiums').doc(installId).set({
-        activated:   true,
-        activatedAt: new Date(),
-        pfPaymentId: data.pf_payment_id ?? '',
-        amount:      parseFloat(data.amount_gross ?? '0'),
-      }, { merge: true });
+      const sandbox = process.env.PAYFAST_SANDBOX === 'true';
+      const host = sandbox ? 'https://sandbox.payfast.co.za' : 'https://www.payfast.co.za';
+      const body = new URLSearchParams(data).toString();
+      const vr = await fetch(`${host}/eng/query/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+      const text = (await vr.text()).trim();
+      if (text !== 'VALID') {
+        console.warn('ITN rejected: PayFast returned', text);
+        res.status(200).send('OK');
+        return;
+      }
+    } catch (e) {
+      console.error('ITN validation error:', e);
+      res.status(200).send('OK');
+      return;
+    }
+
+    const paymentId     = data.m_payment_id;
+    const paymentStatus = data.payment_status;
+
+    try {
+      if (paymentId && paymentStatus === 'COMPLETE') {
+        await adminDb.collection('huawei_premiums').doc(paymentId).set({
+          activated:   true,
+          activatedAt: new Date(),
+          pfPaymentId: data.pf_payment_id ?? '',
+          token:       data.token ?? '',   // PayFast subscription token — needed to cancel
+          amount:      parseFloat(data.amount_gross ?? '0'),
+        }, { merge: true });
+      } else if (paymentId && paymentStatus === 'CANCELLED') {
+        await adminDb.collection('huawei_premiums').doc(paymentId).set({
+          activated: false, cancelledAt: new Date(),
+        }, { merge: true });
+      }
     } catch (e) {
       console.error('payfastItn Firestore error:', e);
     }
-  }
 
-  res.status(200).send('OK');
-});
+    res.status(200).send('OK');
+  }
+);
 
 // ─────────────────────────────────────────────
 // PAYFAST — CHECK PREMIUM STATUS
 // ─────────────────────────────────────────────
 
 export const checkHuaweiPremium = onCall(async (request) => {
-  const { installId } = request.data;
-  if (!installId) return { premium: false };
+  // Accepts `uid` (account/web) or `installId` (device/Huawei) — same collection.
+  const id = request.data?.uid || request.data?.installId;
+  if (!id) return { premium: false };
   try {
-    const doc = await adminDb.collection('huawei_premiums').doc(installId).get();
-    return { premium: doc.exists && doc.data()?.activated === true };
+    const doc = await adminDb.collection('huawei_premiums').doc(id).get();
+    const d = doc.data();
+    return {
+      premium: doc.exists && d?.activated === true,
+      activatedAt: d?.activatedAt ?? null,
+      cancelled: d?.activated === false && !!d?.cancelledAt,
+    };
   } catch {
     return { premium: false };
   }
 });
+
+// ─────────────────────────────────────────────
+// PAYFAST — CANCEL SUBSCRIPTION
+// ─────────────────────────────────────────────
+
+export const cancelPayfastSubscription = onCall(
+  { secrets: ['PAYFAST_MERCHANT_ID', 'PAYFAST_PASSPHRASE'] },
+  async (request) => {
+    const uid = request.auth?.uid || request.data?.uid;
+    if (!uid) return { success: false, error: 'not-authenticated' };
+
+    const ref = adminDb.collection('huawei_premiums').doc(uid);
+    const snap = await ref.get();
+    const token = snap.exists ? snap.data()?.token : '';
+
+    // No PayFast token (e.g. never completed a recurring setup) — just deactivate locally.
+    if (!token) {
+      await ref.set({ activated: false, cancelledAt: new Date() }, { merge: true });
+      return { success: true, note: 'deactivated-local' };
+    }
+
+    try {
+      const merchantId = process.env.PAYFAST_MERCHANT_ID;
+      const passphrase = process.env.PAYFAST_PASSPHRASE ?? '';
+      const sandbox    = process.env.PAYFAST_SANDBOX === 'true';
+      const timestamp  = new Date().toISOString().replace(/\.\d{3}/, '');
+      const version    = 'v1';
+
+      // PayFast API signature: all header fields (incl. passphrase) sorted, key=value, md5.
+      const sigData = { 'merchant-id': merchantId, passphrase, timestamp, version };
+      const sigStr = Object.keys(sigData).sort()
+        .filter((k) => sigData[k] !== '' && sigData[k] != null)
+        .map((k) => `${k}=${encodeURIComponent(sigData[k]).replace(/%20/g, '+')}`)
+        .join('&');
+      const signature = crypto.createHash('md5').update(sigStr).digest('hex');
+
+      const url = `https://api.payfast.co.za/subscriptions/${token}/cancel${sandbox ? '?testing=true' : ''}`;
+      const resp = await fetch(url, {
+        method: 'PUT',
+        headers: { 'merchant-id': merchantId, version, timestamp, signature },
+      });
+      const text = await resp.text();
+
+      if (resp.ok) {
+        await ref.set({ activated: false, cancelledAt: new Date() }, { merge: true });
+        return { success: true };
+      }
+      return { success: false, error: `payfast ${resp.status}: ${text.slice(0, 200)}` };
+    } catch (e) {
+      return { success: false, error: String(e) };
+    }
+  }
+);
 
 // ─────────────────────────────────────────────
 // MAIN FUNCTION

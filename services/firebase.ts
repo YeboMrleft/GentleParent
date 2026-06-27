@@ -1,5 +1,15 @@
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../config/firebase';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  EmailAuthProvider,
+  linkWithCredential,
+  onAuthStateChanged,
+  type User,
+} from 'firebase/auth';
+import { functions, auth } from '../config/firebase';
 
 // ── Vision ────────────────────────────────────────────────────────────────────
 const analyzeImageFunction = httpsCallable(functions, 'analyzeImage');
@@ -186,9 +196,10 @@ const checkHuaweiPremiumFn   = httpsCallable(functions, 'checkHuaweiPremium');
 export const createPayfastPaymentUrl = async (
   installId: string,
   name: string,
+  opts?: { uid?: string; email?: string; web?: boolean },
 ): Promise<string | null> => {
   try {
-    const result = await createPayfastPaymentFn({ installId, name });
+    const result = await createPayfastPaymentFn({ installId, name, ...opts });
     const d = result.data as any;
     return d.success ? (d.url as string) : null;
   } catch {
@@ -196,11 +207,53 @@ export const createPayfastPaymentUrl = async (
   }
 };
 
-export const checkHuaweiPremium = async (installId: string): Promise<boolean> => {
+export const checkHuaweiPremium = async (idOrInstallId: string): Promise<boolean> => {
   try {
-    const result = await checkHuaweiPremiumFn({ installId });
+    const result = await checkHuaweiPremiumFn({ installId: idOrInstallId, uid: idOrInstallId });
     return (result.data as any)?.premium === true;
   } catch {
     return false;
+  }
+};
+
+// ── Account auth (email/password) — used by the web app to manage subscriptions ──
+
+const cancelSubscriptionFn = httpsCallable(functions, 'cancelPayfastSubscription');
+
+export const onAuthChange = (cb: (user: User | null) => void) => onAuthStateChanged(auth, cb);
+
+export const currentUser = () => auth.currentUser;
+export const isSignedInAccount = () => !!auth.currentUser && !auth.currentUser.isAnonymous;
+
+/** Sign up with email/password. If the current session is anonymous, upgrade it
+ *  in place (keeps the same uid + any data) so an existing subscription stays tied. */
+export const signUpEmail = async (email: string, password: string, name?: string) => {
+  const existing = auth.currentUser;
+  let user: User;
+  if (existing && existing.isAnonymous) {
+    const cred = EmailAuthProvider.credential(email, password);
+    const res = await linkWithCredential(existing, cred);
+    user = res.user;
+  } else {
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    user = res.user;
+  }
+  if (name) { try { await updateProfile(user, { displayName: name }); } catch {} }
+  return user;
+};
+
+export const loginEmail = async (email: string, password: string) => {
+  const res = await signInWithEmailAndPassword(auth, email, password);
+  return res.user;
+};
+
+export const logoutAccount = async () => { await signOut(auth); };
+
+export const cancelSubscription = async (uid: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const result = await cancelSubscriptionFn({ uid });
+    return result.data as any;
+  } catch (e) {
+    return { success: false, error: String(e) };
   }
 };

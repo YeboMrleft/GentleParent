@@ -25,6 +25,7 @@ import {
     scheduleWeatherNotification,
 } from '../utils/notifications';
 import { playClickSound } from '../utils/sounds';
+import ThemeSettingsSection from './ThemeSettingsSection';
 
 // parseBirthday helper (mirrors the one in source)
 const parseBirthday = (ddmmyyyy: string): Date | null => {
@@ -54,6 +55,7 @@ interface Props {
   onSetActiveChild: (childId: string) => void;
   onAddChild: (name: string) => void;
   onFAQs: () => void;
+  onAccount?: () => void;
   onRestartWalkthrough: () => void;
   onReset: () => void;
 }
@@ -62,7 +64,7 @@ export default function SettingsScreen({
   onClose, userName, childName, childBirthday,
   children, activeChildId,
   isDarkMode, themeMode, soundEnabled, parentGender,
-  onSetThemeMode, onToggleSound, onSaveName, onSaveChild, onSaveBirthday, onSetActiveChild, onAddChild, onFAQs, onRestartWalkthrough, onReset,
+  onSetThemeMode, onToggleSound, onSaveName, onSaveChild, onSaveBirthday, onSetActiveChild, onAddChild, onFAQs, onAccount, onRestartWalkthrough, onReset,
 }: Props) {
   const [editName,    setEditName]    = useState(userName);
   const [editChild,   setEditChild]   = useState(childName);
@@ -256,6 +258,9 @@ export default function SettingsScreen({
               ))}
             </View>
           </View>
+
+          {/* App Theme Selector */}
+          <ThemeSettingsSection theme={{ background: cardBg, cardText: textColor, cardSubText: subColor }} />
 
           {/* Sound Toggle */}
           <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
@@ -543,6 +548,29 @@ export default function SettingsScreen({
               </View>
             </View>
           </Modal>
+
+          {/* ── Account & Subscription (web) ── */}
+          {onAccount && (
+            <>
+              <Text style={[styles.sectionLabel, { color: subColor }]}>ACCOUNT</Text>
+              <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
+                <TouchableOpacity
+                  style={styles.feedbackRow}
+                  onPress={() => { playClickSound(); onAccount(); }}
+                  activeOpacity={0.75}
+                >
+                  <View style={[styles.feedbackIcon, { backgroundColor: '#FDE8F2' }]}>
+                    <Text style={{ fontSize: 20 }}>👤</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.rowTitle, { color: textColor }]}>Account & Subscription</Text>
+                    <Text style={[styles.rowSub, { color: subColor }]}>Sign in, manage your Premium plan</Text>
+                  </View>
+                  <Text style={{ color: subColor, fontSize: 18 }}>›</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
 
           {/* ── Help ── */}
           <Text style={[styles.sectionLabel, { color: subColor }]}>HELP</Text>
