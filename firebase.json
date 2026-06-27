@@ -1,12 +1,23 @@
 {
-  "hosting": {
-    "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      { "source": "/features", "destination": "/features.html" },
-      { "source": "/memo",     "destination": "/memo.html" }
-    ]
-  },
+  "hosting": [
+    {
+      "target": "marketing",
+      "public": "site",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "/features", "destination": "/features.html" },
+        { "source": "/memo",     "destination": "/memo.html" }
+      ]
+    },
+    {
+      "target": "app",
+      "public": "dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ]
+    }
+  ],
   "functions": [
     {
       "source": "functions",

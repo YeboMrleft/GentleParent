@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { initializeApp } from 'firebase/app';
-import { getReactNativePersistence, initializeAuth, signInAnonymously } from 'firebase/auth';
+import { getAuth, getReactNativePersistence, initializeAuth, signInAnonymously } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 
@@ -16,10 +17,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// ✅ Auth now persists between sessions using AsyncStorage
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-});
+// Auth persists between sessions. On native we use AsyncStorage persistence;
+// getReactNativePersistence doesn't exist in the Firebase web SDK, so on web
+// we use getAuth (default browser localStorage persistence).
+export const auth = Platform.OS === 'web'
+  ? getAuth(app)
+  : initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
 
 export const db = getFirestore(app);
 export const functions = getFunctions(app, 'us-central1');

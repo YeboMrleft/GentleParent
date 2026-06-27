@@ -3,6 +3,7 @@ import Constants from 'expo-constants';
 import React, { useEffect, useState } from 'react';
 import { Alert, Appearance, BackHandler, Platform } from 'react-native';
 import Purchases, { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
+import { ThemeProvider, useThemeContext } from '../context/ThemeContext';
 import AboutScreen from '../components/AboutScreen';
 import BraKScreen from '../components/BraKScreen';
 import NovelReaderScreen from '../components/NovelReaderScreen';
@@ -122,7 +123,8 @@ const CHILDREN_KEY = 'children_v1';
 const UNLOCK_ALL_SCREENS = false;
 const ACTIVE_CHILD_KEY = 'active_child_id';
 
-export default function Index() {
+function IndexContent() {
+  const { theme: contextTheme } = useThemeContext();
   const [screen,       setScreen]       = useState<Screen>('splash_inka');
   const [userName,     setUserName]     = useState('');
   const [children,     setChildren]     = useState<ChildProfile[]>([]);
@@ -347,6 +349,7 @@ const handleToggleSound = async () => {
   // ── Load persisted user data ─────────────────────────────────────────────
 useEffect(() => {
   (async () => {
+    try {
     const [
       name,
       legacyChildName,
@@ -414,6 +417,11 @@ useEffect(() => {
     setCompanionMsgCount(companionCount);
     setParentingMsgCount(parentingCount);
 
+    // Essential UI state is loaded — render now. Optional native features
+    // (purchases, sounds, notifications) follow and must never block first paint
+    // (some can hang on web).
+    setIsLoaded(true);
+
     const purchasesReady = await configurePurchases();
     setIsPurchasesConfigured(purchasesReady);
 
@@ -467,7 +475,13 @@ useEffect(() => {
 
     registerInstall();
     Analytics.appOpen();
-    setIsLoaded(true);
+    } catch (e) {
+      // On web some native calls (purchases, sounds, notifications) may fail —
+      // never block first render because of them.
+      console.warn('[startup] load error (continuing):', e);
+    } finally {
+      setIsLoaded(true);
+    }
   })();
 }, []);
 
@@ -537,7 +551,7 @@ useEffect(() => {
   if (screen === 'splash_gp') {
     return (
       <GentleParentSplash
-        theme={theme}
+        theme={contextTheme}
         onDone={() => {
           if (!userName) {
             setScreen('onboarding');
@@ -999,5 +1013,14 @@ if (screen === 'settings') {
         }}
       />
     </>
+  );
+}
+
+// Wrap with ThemeProvider to enable theme system
+export default function Index() {
+  return (
+    <ThemeProvider>
+      <IndexContent />
+    </ThemeProvider>
   );
 }

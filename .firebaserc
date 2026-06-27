@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "gentleparent-e4900"
-  }
+  },
+  "targets": {
+    "gentleparent-e4900": {
+      "hosting": {
+        "marketing": [
+          "gentleparent-e4900"
+        ],
+        "app": [
+          "gentleparent-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
