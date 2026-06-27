@@ -16,6 +16,7 @@ import {
   signUpEmail,
   loginEmail,
   logoutAccount,
+  sendPasswordReset,
   onAuthChange,
   createPayfastPaymentUrl,
   checkHuaweiPremium,
@@ -44,6 +45,7 @@ export default function AccountScreen({ onClose, userName, isPremium, onPremiumC
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     return onAuthChange((u) => {
@@ -73,6 +75,20 @@ export default function AccountScreen({ onClose, userName, isPremium, onPremiumC
       else if (code.includes('invalid-credential') || code.includes('wrong-password')) setError('Incorrect email or password.');
       else if (code.includes('operation-not-allowed')) setError('Email sign-in is not enabled yet. Please contact support.');
       else setError('Could not complete that. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setError(''); setNotice('');
+    if (!email.includes('@')) { setError('Enter your email in the field above, then tap reset.'); return; }
+    setBusy(true);
+    try {
+      await sendPasswordReset(email.trim());
+      setNotice('Password reset link sent — check your inbox (and spam folder).');
+    } catch {
+      setError('Could not send the reset email. Check the address and try again.');
     } finally {
       setBusy(false);
     }
@@ -152,10 +168,17 @@ export default function AccountScreen({ onClose, userName, isPremium, onPremiumC
               <TextInput style={styles.input} value={password} onChangeText={setPassword} placeholder="At least 6 characters" placeholderTextColor="#B9A6B0" secureTextEntry />
 
               {!!error && <Text style={styles.error}>{error}</Text>}
+              {!!notice && <Text style={styles.notice}>{notice}</Text>}
 
               <TouchableOpacity style={styles.primary} onPress={handleAuth} disabled={busy}>
                 {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryTxt}>{mode === 'signup' ? 'Create account' : 'Log in'}</Text>}
               </TouchableOpacity>
+
+              {mode === 'login' && (
+                <TouchableOpacity style={styles.forgot} onPress={handleReset} disabled={busy}>
+                  <Text style={styles.forgotTxt}>Forgot password?</Text>
+                </TouchableOpacity>
+              )}
             </>
           ) : (
             <>
@@ -213,6 +236,9 @@ const styles = StyleSheet.create({
   label: { fontSize: 12, fontWeight: '700', color: MUTED, marginBottom: 7, marginTop: 14, letterSpacing: 0.3 },
   input: { backgroundColor: '#fff', borderWidth: 1, borderColor: LINE, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: INK },
   error: { color: '#DC2626', fontSize: 13, marginTop: 14, lineHeight: 18 },
+  notice: { color: '#16A34A', fontSize: 13, marginTop: 14, lineHeight: 18 },
+  forgot: { alignItems: 'center', marginTop: 16 },
+  forgotTxt: { color: ROSE, fontSize: 13.5, fontWeight: '600', textDecorationLine: 'underline' },
   primary: { backgroundColor: ROSE, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 22, shadowColor: ROSE, shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
   primaryTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
   statusCard: { backgroundColor: '#fff', borderWidth: 1, borderColor: LINE, borderRadius: 18, padding: 22, marginBottom: 6 },

@@ -2,6 +2,7 @@ import { httpsCallable } from 'firebase/functions';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   updateProfile,
   EmailAuthProvider,
@@ -248,6 +249,8 @@ export const loginEmail = async (email: string, password: string) => {
 };
 
 export const logoutAccount = async () => { await signOut(auth); };
+
+export const sendPasswordReset = async (email: string) => { await sendPasswordResetEmail(auth, email); };
 
 export const cancelSubscription = async (uid: string): Promise<{ success: boolean; error?: string }> => {
   try {
